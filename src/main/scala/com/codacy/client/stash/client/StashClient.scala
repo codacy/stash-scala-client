@@ -5,7 +5,6 @@ import com.codacy.client.stash.util.HTTPStatusCodes
 import com.ning.http.client.AsyncHttpClient
 import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.libs.oauth.{ConsumerKey, RequestToken}
-import play.api.libs.ws.WSClient
 import play.api.libs.ws.ning.NingWSClient
 
 import scala.concurrent.Await
@@ -16,7 +15,8 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   private lazy val KEY = ConsumerKey(key, secretKey)
   private lazy val TOKEN = RequestToken(token, secretToken)
 
-  private val client: WSClient = new NingWSClient(new AsyncHttpClient().getConfig)
+  private lazy val requestSigner = OAuthRSACalculator(KEY, TOKEN)
+  private lazy val requestTimeout = Duration(10, SECONDS)
 
   /*
    * Does an API request and parses the json output into a class
@@ -53,13 +53,13 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   /*
    * Does an API post
    */
-  def post[T](request: Request[T], values: JsValue)(implicit reader: Reads[T]): RequestResponse[T] = {
+  def post[T](request: Request[T], values: JsValue)(implicit reader: Reads[T]): RequestResponse[T] = withClient { client =>
     val url = generateUrl(request.url)
     val jpromise = client.url(url)
       .withFollowRedirects(follow = true)
-      .sign(OAuthRSACalculator(KEY, TOKEN))
+      .sign(requestSigner)
       .post(values)
-    val result = Await.result(jpromise, Duration(10, SECONDS))
+    val result = Await.result(jpromise, requestTimeout)
 
     val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status)) {
       val body = result.body
@@ -78,13 +78,13 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   }
 
   /* copy paste from post ... */
-  def delete[T](requestUrl: String): RequestResponse[Boolean] = {
+  def delete[T](requestUrl: String): RequestResponse[Boolean] = withClient { client =>
     val url = generateUrl(requestUrl)
     val jpromise = client.url(url)
       .withFollowRedirects(follow = true)
-      .sign(OAuthRSACalculator(KEY, TOKEN))
+      .sign(requestSigner)
       .delete()
-    val result = Await.result(jpromise, Duration(10, SECONDS))
+    val result = Await.result(jpromise, requestTimeout)
 
     val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED, HTTPStatusCodes.NO_CONTENT).contains(result.status)) {
       RequestResponse(Option(true))
@@ -94,13 +94,13 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
     value
   }
 
-  private def get(requestUrl: String): Either[ResponseError, JsValue] = {
+  private def get(requestUrl: String): Either[ResponseError, JsValue] = withClient { client =>
     val url = generateUrl(requestUrl)
     val jpromise = client.url(url)
       .withFollowRedirects(follow = true)
-      .sign(OAuthRSACalculator(KEY, TOKEN))
+      .sign(requestSigner)
       .get()
-    val result = Await.result(jpromise, Duration(10, SECONDS))
+    val result = Await.result(jpromise, requestTimeout)
 
     val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status)) {
       val body = result.body
@@ -123,5 +123,12 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   }
 
   private def generateUrl(endpoint: String) = s"$baseUrl$endpoint"
+
+  private def withClient[T](block: NingWSClient => T): T = {
+    val client = new NingWSClient(new AsyncHttpClient().getConfig)
+    val result = block(client)
+    client.close()
+    result
+  }
 
 }

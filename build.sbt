@@ -2,7 +2,7 @@ import Dependencies._
 
 name := """stash-scala-client"""
 
-version := "1.0.0-beta1"
+version := "1.0.0-beta4"
 
 scalaVersion := "2.10.5"
 
