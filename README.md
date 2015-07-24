@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/codacy/stash-scala-client.svg)](https://travis-ci.org/codacy/stash-scala-client)
-[![Codacy Badge](https://www.codacy.com/project/badge/0e8a571201734be38cadd9874445f209)](https://www.codacy.com/codacy/stash-scala-client)
+[![Codacy Badge](https://www.codacy.com/project/badge/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/app/Codacy/stash-scala-client)
 
 # Stash Scala client
 
