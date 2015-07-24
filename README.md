@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/codacy/stash-scala-client.svg)](https://travis-ci.org/codacy/stash-scala-client)
-[![Codacy Badge](https://www.codacy.com/project/badge/7cafaff96aba4ba48e9e14e3c196a8a9)](https://www.codacy.com/public/codacy/stash-scala-client.git)
+[![Codacy Badge](https://www.codacy.com/project/badge/0e8a571201734be38cadd9874445f209)](https://www.codacy.com/codacy/stash-scala-client)
 
 # Stash Scala client
 
@@ -11,7 +11,7 @@ It is in a very early stage and all the contributions are welcome.
 
 Import on SBT:
 
-    "com.codacy" % "stash-scala-client_2.11" % "1.0"
+    "com.codacy" %% "stash-scala-client" % "1.0.0-beta4"
 
 ### Creators
 
@@ -21,4 +21,4 @@ Import on SBT:
 
 ### License
 
-stash-scala-client is available under the GPLv3 license. See the LICENSE file for more info.
+stash-scala-client is available under the The Apache Software License, Version 2.0.
