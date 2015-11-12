@@ -1,6 +1,5 @@
 [![Circle CI](https://circleci.com/gh/codacy/stash-scala-client/tree/master.svg?style=shield)](https://circleci.com/gh/codacy/stash-scala-client/tree/master)
 [![Codacy Badge](https://www.codacy.com/project/badge/grade/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/app/Codacy/stash-scala-client)
-[![Codacy Badge](https://api.codacy.com/project/badge/coverage/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/app/Codacy/coverage-parser)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11)
 
 # Stash Scala client
