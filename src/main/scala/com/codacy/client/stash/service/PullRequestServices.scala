@@ -1,8 +1,8 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{Commit, PullRequest}
-import play.api.libs.json.{JsNull, JsObject, Json}
+import com.codacy.client.stash.{Commit, PullRequest, PullRequestComment}
+import play.api.libs.json._
 
 class PullRequestServices(client: StashClient) {
 
@@ -31,4 +31,41 @@ class PullRequestServices(client: StashClient) {
     client.executePaginated(Request(url, classOf[Seq[Commit]]))
   }
 
+  /*
+ * Gets the list of comments of a pull request
+ *
+ */
+  def getPullRequestComments(projectKey: String, repository: String, prId: Long): RequestResponse[Seq[PullRequestComment]] = {
+    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId/comments"
+
+    client.executePaginated(Request(url, classOf[Seq[PullRequestComment]]))
+  }
+
+  /*
+  * Comment a file in a pull request
+  */
+  def createComment(projectKey: String, repo: String, prId: Long, body: String, file: Option[String], line: Option[Int], lineType: String = "ADDED"): RequestResponse[PullRequestComment] = {
+    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments"
+
+    val params = JsObject( file.map(filename => "path" -> JsString(filename)).toSeq ++
+      line.map(lineTo => "line" -> JsNumber(lineTo)) ++
+      Some("lineType"-> JsString(lineType))
+    )
+
+    val values = Json.obj(
+      "text" -> body,
+      "anchor" -> params
+    )
+
+    client.post(Request(url, classOf[PullRequestComment]), values)
+  }
+
+  /*
+   * Delete a comment in a pull request
+   */
+  def deleteComment(projectKey: String, repo: String, prId: Long, commentId: Long): RequestResponse[Boolean] = {
+    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments/$commentId?version=0"
+
+    client.delete(url)
+  }
 }
