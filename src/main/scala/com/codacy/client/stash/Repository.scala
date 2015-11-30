@@ -4,7 +4,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class Repository(slug: String, name: String, scm: String, public: Boolean,
-                      cloneUrl: String, cloneUrls: Seq[RepositoryUrl])
+                      cloneUrls: Seq[RepositoryUrl])
 
 object Repository {
   implicit val reader: Reads[Repository] = {
@@ -12,7 +12,6 @@ object Repository {
       (__ \ "name").read[String] and
       (__ \ "scmId").read[String] and
       (__ \ "public").read[Boolean] and
-      (__ \ "cloneUrl").read[String] and
       (__ \ "links" \ "clone").read[Seq[JsValue]].map(parseLinks)
       )(Repository.apply _)
   }
