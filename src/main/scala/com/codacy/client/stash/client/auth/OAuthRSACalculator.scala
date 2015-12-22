@@ -19,44 +19,55 @@ case class OAuthRSACalculator(consumerKey: ConsumerKey, token: RequestToken) ext
   this.setTokenWithSecret(token.token, token.secret)
   this.setMessageSigner(new RsaSha1MessageSigner())
 
-  override protected def wrap(request: Any) = request match {
+  override protected def wrap(request: Any): HttpRequest = request match {
     case r: WSRequest => new WSRequestAdapter(r)
     case _ => throw new IllegalArgumentException("OAuthCalculator expects requests of type play.api.libs.ws.WSRequest")
   }
 
-  override def sign(request: WSRequest): Unit = sign(wrap(request))
+  def sign(request: WSRequest): Unit = sign(wrap(request))
 
   class WSRequestAdapter(request: WSRequest) extends HttpRequest {
 
-    import scala.collection.JavaConverters._
+    import scala.collection.JavaConversions._
 
     override def unwrap() = request
 
-    override def getAllHeaders: java.util.Map[String, String] =
-      request.allHeaders.map { entry => (entry._1, entry._2.headOption) }
-        .filter { entry => entry._2.isDefined }
-        .map { entry => (entry._1, entry._2.get) }.asJava
+    override def getAllHeaders = {
+      request.headers.flatMap{ case (key,values) => values.headOption.map((key,_)) }
+    }
 
-    override def getHeader(name: String): String = request.header(name).getOrElse("")
+    override def getHeader(name: String): String = {
+      request.headers.collectFirst{ case (name,values) => values.headOption }.flatten.getOrElse("")
+    }
 
     override def getContentType: String = getHeader("Content-Type")
 
-    override def getMessagePayload = new java.io.ByteArrayInputStream(request.getBody.getOrElse(Array.emptyByteArray))
+    override def getMessagePayload = {
+      val bytes = request.body match{
+        case InMemoryBody(bytes) => bytes
+        case _ => Array.emptyByteArray
+      }
+      new java.io.ByteArrayInputStream(bytes)
+    }
 
     override def getMethod: String = this.request.method
 
-    override def setHeader(name: String, value: String) {
-      request.setHeader(name, value)
+    override def setHeader(name: String, value: String) = {
+      request.withHeaders((name,value))
     }
 
     /**
      * Returns the full URL with query string for correct signing.
      * @return a URL with query string attached.
      */
-    override def getRequestUrl = request.url
 
-    override def setRequestUrl(url: String) {
-      request.setUrl(url)
+    //this needs to be a var to implement java getters and setters of the interface
+    private[this] var url_ = request.url
+
+    override def getRequestUrl = url_
+
+    override def setRequestUrl(url: String) = {
+      url_ = url
     }
 
   }
