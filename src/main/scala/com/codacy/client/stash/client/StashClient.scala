@@ -1,21 +1,20 @@
 package com.codacy.client.stash.client
 
-import com.codacy.client.stash.client.auth.OAuthRSACalculator
+import com.codacy.client.stash.client.auth.WSSignatureCalculatorRSA
 import com.codacy.client.stash.util.HTTPStatusCodes
 import com.ning.http.client.AsyncHttpClient
+import com.ning.http.client.oauth.{ConsumerKey, RequestToken}
 import play.api.libs.json.{JsValue, Json, Reads}
-import play.api.libs.oauth.{ConsumerKey, RequestToken}
 import play.api.libs.ws.ning.NingWSClient
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class StashClient(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String) {
 
-  private lazy val KEY = ConsumerKey(key, secretKey)
-  private lazy val TOKEN = RequestToken(token, secretToken)
+  private lazy val KEY = new ConsumerKey(key, secretKey)
+  private lazy val TOKEN = new RequestToken(token, secretToken)
 
-  private lazy val requestSigner = OAuthRSACalculator(KEY, TOKEN)
+  private lazy val requestSigner = new WSSignatureCalculatorRSA(KEY, TOKEN)
   private lazy val requestTimeout = Duration(10, SECONDS)
 
   /*
@@ -38,10 +37,10 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
           isLastPage <- (json \ "isLastPage").asOpt[Boolean] if !isLastPage
           nextPageStart <- (json \ "nextPageStart").asOpt[String]
         } yield {
-            val cleanUrl = request.url.takeWhile(_ != '?')
-            val nextUrl = s"$cleanUrl?start=nextPageStart"
-            executePaginated(Request(nextUrl, request.classType)).value.getOrElse(Seq.empty)
-          }).getOrElse(Seq.empty)
+          val cleanUrl = request.url.takeWhile(_ != '?')
+          val nextUrl = s"$cleanUrl?start=nextPageStart"
+          executePaginated(Request(nextUrl, request.classType)).value.getOrElse(Seq.empty)
+        }).getOrElse(Seq.empty)
 
         RequestResponse(Some((json \ "values").as[Seq[T]] ++ nextRepos))
 
