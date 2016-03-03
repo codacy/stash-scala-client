@@ -47,9 +47,9 @@ class PullRequestServices(client: StashClient) {
   def createComment(projectKey: String, repo: String, prId: Long, body: String, file: Option[String], line: Option[Int], lineType: String = "ADDED"): RequestResponse[PullRequestComment] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments"
 
-    val params = JsObject( file.map(filename => "path" -> JsString(filename)).toSeq ++
+    val params = JsObject(file.map(filename => "path" -> JsString(filename)).toSeq ++
       line.map(lineTo => "line" -> JsNumber(lineTo)) ++
-      Some("lineType"-> JsString(lineType))
+      Some("lineType" -> JsString(lineType))
     )
 
     val values = Json.obj(

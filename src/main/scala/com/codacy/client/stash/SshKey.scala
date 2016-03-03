@@ -10,7 +10,7 @@ object SshKey {
     (__ \ "key" \ "id").read[Long] and
       (__ \ "key" \ "text").read[String] and
       (__ \ "key" \ "label").read[String]
-    )(SshKey.apply _)
+    ) (SshKey.apply _)
 }
 
 case class SshKeySimple(key: String)

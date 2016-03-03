@@ -25,5 +25,5 @@ object PullRequest {
       (__ \ "toRef" \ "repository" \ "slug").read[String] and
       (__ \ "toRef" \ "id").read[String].map(_.stripPrefix("refs/heads/")) and
       (__ \ "author" \ "user").read[User]
-    )(PullRequest.apply _)
+    ) (PullRequest.apply _)
 }
