@@ -10,5 +10,5 @@ object User {
     (__ \ "slug").read[String] and
       (__ \ "emailAddress").read[String] and
       (__ \ "displayName").read[String]
-    )(User.apply _)
+    ) (User.apply _)
 }

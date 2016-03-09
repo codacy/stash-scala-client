@@ -12,5 +12,5 @@ object CommitComment {
       (__ \ "author").read[User] and
       (__ \ "text").read[String] and
       (__ \ "createdDate").read[Long].map(millis => new DateTime(millis))
-    )(CommitComment.apply _)
+    ) (CommitComment.apply _)
 }

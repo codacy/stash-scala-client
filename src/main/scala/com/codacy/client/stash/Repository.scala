@@ -13,7 +13,7 @@ object Repository {
       (__ \ "scmId").read[String] and
       (__ \ "public").read[Boolean] and
       (__ \ "links" \ "clone").read[Seq[JsValue]].map(parseLinks)
-      )(Repository.apply _)
+      ) (Repository.apply _)
   }
 
   private def parseLinks(links: Seq[JsValue]): Seq[RepositoryUrl] = {
