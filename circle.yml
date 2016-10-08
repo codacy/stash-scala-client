@@ -1,6 +1,6 @@
 machine:
   java:
-    version: oraclejdk8 
+    version: oraclejdk8
 test:
   override:
     - sbt clean coverage test

@@ -13,18 +13,17 @@ It is in a very early stage and all the contributions are welcome.
 Import on SBT:
 
 ```
-"com.codacy" %% "stash-scala-client" % "1.0.0-beta4"
+"com.codacy" %% "stash-scala-client" % "1.1.5"
 ```
 
 Usage:
 
-```
+```scala
 val client = new StashClient("baseUrl", "consumerKey", "consumerSecret", "token", "secretToken")
 
 val repoServices = new RepositoryServices(client)
 
 val response = repoServices.getRepositories("projectKey")
-
 ```
 
 ### Creators
