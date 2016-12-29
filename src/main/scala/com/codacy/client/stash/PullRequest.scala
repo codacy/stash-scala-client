@@ -9,7 +9,7 @@ case class PullRequest(id: Long, title: String, description: Option[String],
                        sourceRepository: String, sourceBranch: String,
                        destRepository: String, destBranch: String,
                        author: User) {
-  def url(baseUrl: String, projectKey: String) = s"$baseUrl/projects/$projectKey/repos/$destRepository/pull-request/$id"
+  def url(baseUrl: String, projectKey: String) = s"$baseUrl/projects/$projectKey/repos/$destRepository/pull-requests/$id"
 }
 
 object PullRequest {
