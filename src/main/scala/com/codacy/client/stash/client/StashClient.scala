@@ -2,14 +2,14 @@ package com.codacy.client.stash.client
 
 import com.codacy.client.stash.client.auth.WSSignatureCalculatorRSA
 import com.codacy.client.stash.util.HTTPStatusCodes
-import com.ning.http.client.AsyncHttpClient
+import com.ning.http.client.{AsyncHttpClient, AsyncHttpClientConfigBean}
 import com.ning.http.client.oauth.{ConsumerKey, RequestToken}
 import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.libs.ws.ning.NingWSClient
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class StashClient(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String) {
+class StashClient(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String, acceptAllCertificates: Boolean = false) {
 
   private lazy val KEY = new ConsumerKey(key, secretKey)
   private lazy val TOKEN = new RequestToken(token, secretToken)
@@ -124,7 +124,14 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   private def generateUrl(endpoint: String) = s"$baseUrl$endpoint"
 
   private def withClient[T](block: NingWSClient => T): T = {
-    val client = new NingWSClient(new AsyncHttpClient().getConfig)
+
+    val config =  if(acceptAllCertificates) {
+      new AsyncHttpClientConfigBean().setAcceptAnyCertificate(true).setFollowRedirect(true)
+    } else {
+      new AsyncHttpClient().getConfig
+    }
+
+    val client = NingWSClient(config)
     val result = block(client)
     client.close()
     result
