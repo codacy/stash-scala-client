@@ -35,10 +35,10 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
       case Right(json) =>
         val nextRepos = (for {
           isLastPage <- (json \ "isLastPage").asOpt[Boolean] if !isLastPage
-          nextPageStart <- (json \ "nextPageStart").asOpt[String]
+          nextPageStart <- (json \ "nextPageStart").asOpt[Int]
         } yield {
           val cleanUrl = request.url.takeWhile(_ != '?')
-          val nextUrl = s"$cleanUrl?start=nextPageStart"
+          val nextUrl = s"$cleanUrl?start=$nextPageStart"
           executePaginated(Request(nextUrl, request.classType)).value.getOrElse(Seq.empty)
         }).getOrElse(Seq.empty)
 
