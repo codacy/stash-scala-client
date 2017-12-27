@@ -33,7 +33,7 @@ class UserServices(client: StashClient) {
       "permission" -> permission
     )
 
-    client.post(Request(url, classOf[SshKey]), values)
+    client.postJson(Request(url, classOf[SshKey]), values)
   }
 
 }

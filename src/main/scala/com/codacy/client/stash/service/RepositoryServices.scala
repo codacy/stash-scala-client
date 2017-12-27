@@ -27,7 +27,7 @@ class RepositoryServices(client: StashClient) {
       "permission" -> permission
     )
 
-    client.post(Request(url, classOf[SshKeySimple]), values)
+    client.postJson(Request(url, classOf[SshKeySimple]), values)
   }
 
 }
