@@ -20,7 +20,7 @@ class CommitServices(client: StashClient) {
       //      )
     )
 
-    client.post(Request(url, classOf[CommitComment]), values)
+    client.postJson(Request(url, classOf[CommitComment]), values)
   }
 
 }
