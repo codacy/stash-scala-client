@@ -57,7 +57,7 @@ class PullRequestServices(client: StashClient) {
       "anchor" -> params
     )
 
-    client.post(Request(url, classOf[PullRequestComment]), values)
+    client.postJson(Request(url, classOf[PullRequestComment]), values)
   }
 
   /*
