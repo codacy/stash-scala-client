@@ -30,6 +30,8 @@ import com.ning.http.util.UTF8UrlEncoder;
 import oauth.signpost.OAuth;
 import oauth.signpost.exception.OAuthMessageSignerException;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -269,8 +271,13 @@ public class OAuthSignatureCalculatorRSA implements SignatureCalculator {
         }
 
         public OAuthParameterSet add(String key, String value) {
-            Parameter p = new Parameter(UTF8UrlEncoder.encode(key), UTF8UrlEncoder.encode(value));
-            allParameters.add(p);
+            try {
+                Parameter p = new Parameter(URLEncoder.encode(key, StandardCharsets.UTF_8.toString()),
+                                            URLEncoder.encode(value, StandardCharsets.UTF_8.toString()));
+                allParameters.add(p);
+            } catch (UnsupportedEncodingException e) {
+                // Ignore this parameter set
+            }
             return this;
         }
 
