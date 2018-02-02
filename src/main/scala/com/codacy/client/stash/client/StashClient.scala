@@ -1,24 +1,26 @@
 package com.codacy.client.stash.client
 
-import com.codacy.client.stash.client.auth.WSSignatureCalculatorRSA
+import com.codacy.client.stash.client.auth.{Authenticator, OAuth1Authenticator}
 import com.codacy.client.stash.util.HTTPStatusCodes
-import com.ning.http.client.oauth.{ConsumerKey, RequestToken}
 import com.ning.http.client.{AsyncHttpClient, AsyncHttpClientConfigBean}
 import play.api.http.{ContentTypeOf, Writeable}
 import play.api.libs.json._
+import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ning.NingWSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class StashClient(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String, acceptAllCertificates: Boolean = false) {
+class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, acceptAllCertificates: Boolean = false) {
+  // Keep these 2 constructors just for backward compatibility
+  @deprecated("Please pass an OAuth1Authenticator(key, secretKey, token secretToken) into StashClient.", "3.0.4")
+  def this(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String) =
+    this(baseUrl, Some(new OAuth1Authenticator(key, secretKey, token, secretToken)))
+  @deprecated("Please pass an OAuth1Authenticator(key, secretKey, token secretToken) into StashClient.", "3.0.4")
+  def this(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String, acceptAllCertificates: Boolean) =
+    this(baseUrl, Some(new OAuth1Authenticator(key, secretKey, token, secretToken)), acceptAllCertificates)
 
-  private lazy val KEY = new ConsumerKey(key, secretKey)
-  private lazy val TOKEN = new RequestToken(token, secretToken)
-
-  private lazy val requestSigner = new WSSignatureCalculatorRSA(KEY, TOKEN)
   private lazy val requestTimeout = Duration(10, SECONDS)
-
   /*
    * Does an API request and parses the json output into a class
    */
@@ -67,6 +69,11 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
     performRequest("PUT", request, values)
   }
 
+  // Wrap request with authentication options
+  private def withAuthentication(request: WSRequest): WSRequest = authenticator match {
+    case Some(auth) => auth.withAuthentication(request)
+    case None => request
+  }
   /*
    * Does an API request
    */
@@ -75,14 +82,13 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
     val url = generateUrl(request.url)
 
     withClient { client =>
-      val jpromise = client
-        .url(url)
-        .withFollowRedirects(follow = true)
-        .withMethod(method)
-        .withBody(values)
-        .sign(requestSigner)
-        .execute()
-
+      val jpromise = withAuthentication(
+        client
+          .url(url)
+          .withFollowRedirects(follow = true)
+          .withMethod(method)
+          .withBody(values)
+      ).execute()
       val result = Await.result(jpromise, requestTimeout)
 
       val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status)) {
@@ -121,10 +127,9 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   def delete[T](requestUrl: String): RequestResponse[Boolean] = withClient {
     client =>
       val url = generateUrl(requestUrl)
-      val jpromise = client.url(url)
-        .withFollowRedirects(follow = true)
-        .sign(requestSigner)
-        .delete()
+      val jpromise = withAuthentication(
+        client.url(url).withFollowRedirects(follow = true)
+      ).delete()
       val result = Await.result(jpromise, requestTimeout)
 
       val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED, HTTPStatusCodes.NO_CONTENT).contains(result.status)) {
@@ -138,10 +143,9 @@ class StashClient(baseUrl: String, key: String, secretKey: String, token: String
   private def get(requestUrl: String): Either[ResponseError, JsValue] = withClient {
     client =>
       val url = generateUrl(requestUrl)
-      val jpromise = client.url(url)
-        .withFollowRedirects(follow = true)
-        .sign(requestSigner)
-        .get()
+      val jpromise = withAuthentication(
+        client.url(url).withFollowRedirects(follow = true)
+      ).get()
       val result = Await.result(jpromise, requestTimeout)
 
       val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status)) {
