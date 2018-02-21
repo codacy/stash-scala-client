@@ -10,24 +10,27 @@ import play.api.libs.ws.ning.NingWSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.util.{Properties, Try}
 
 class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, acceptAllCertificates: Boolean = false) {
   // Keep these 2 constructors just for backward compatibility
   @deprecated("Please pass an OAuth1Authenticator(key, secretKey, token secretToken) into StashClient.", "3.0.4")
   def this(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String) =
     this(baseUrl, Some(new OAuth1Authenticator(key, secretKey, token, secretToken)))
+
   @deprecated("Please pass an OAuth1Authenticator(key, secretKey, token secretToken) into StashClient.", "3.0.4")
   def this(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String, acceptAllCertificates: Boolean) =
     this(baseUrl, Some(new OAuth1Authenticator(key, secretKey, token, secretToken)), acceptAllCertificates)
 
   private lazy val requestTimeout = Duration(10, SECONDS)
+
   /*
    * Does an API request and parses the json output into a class
    */
   def execute[T](request: Request[T])(implicit reader: Reads[T]): RequestResponse[T] = {
-    get(request.url) match {
+    get[T](request.url) match {
       case Right(json) => RequestResponse(json.asOpt[T])
-      case Left(error) => RequestResponse(None, error.message, hasError = true)
+      case Left(error) => error
     }
   }
 
@@ -35,7 +38,7 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
    * Does an paginated API request and parses the json output into a sequence of classes
    */
   def executePaginated[T](request: Request[Seq[T]])(implicit reader: Reads[T]): RequestResponse[Seq[T]] = {
-    get(request.url) match {
+    get[Seq[T]](request.url) match {
       case Right(json) =>
         val nextRepos = (for {
           isLastPage <- (json \ "isLastPage").asOpt[Boolean] if !isLastPage
@@ -48,8 +51,7 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
 
         RequestResponse(Some((json \ "values").as[Seq[T]] ++ nextRepos))
 
-      case Left(error) =>
-        RequestResponse[Seq[T]](None, error.message, hasError = true)
+      case Left(resp) => resp
     }
   }
 
@@ -74,6 +76,7 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
     case Some(auth) => auth.withAuthentication(request)
     case None => request
   }
+
   /*
    * Does an API request
    */
@@ -91,40 +94,21 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
       ).execute()
       val result = Await.result(jpromise, requestTimeout)
 
-      val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status)) {
-        val body = result.body
+      Try(result.body).map {
+        case body if Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status) =>
+          parseJson[T](body) match {
+            case Right(json) => valueOrError[T](json)
+            case Left(response) => response
+          }
 
-        val jsValue = parseJson(body)
-        jsValue match {
-          case Right(json) =>
-            json.validate[T] match {
-              case s: JsSuccess[T] =>
-                RequestResponse(Some(s.value))
-
-              case e: JsError =>
-                val msg =
-                  s"""
-                     |Failed to validate json:
-                     |$json
-                     |JsError errors:
-                     |${e.errors.mkString(System.lineSeparator)}
-                """.stripMargin
-                RequestResponse[T](None, message = msg, hasError = true)
-            }
-
-          case Left(message) =>
-            RequestResponse[T](None, message = message.message, hasError = true)
-        }
-      } else {
-        RequestResponse[T](None, message = result.statusText, hasError = true)
+        case body =>
+          getError[T](result.status, result.statusText, body)
       }
-
-      value
+        .getOrElse(getError[T](result.status, result.statusText))
     }
   }
 
-  /* copy paste from post ... */
-  def delete[T](requestUrl: String): RequestResponse[Boolean] = withClient {
+  def delete(requestUrl: String): RequestResponse[Boolean] = withClient {
     client =>
       val url = generateUrl(requestUrl)
       val jpromise = withAuthentication(
@@ -132,15 +116,21 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
       ).delete()
       val result = Await.result(jpromise, requestTimeout)
 
-      val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED, HTTPStatusCodes.NO_CONTENT).contains(result.status)) {
-        RequestResponse(Option(true))
-      } else {
-        RequestResponse[Boolean](None, result.statusText, hasError = true)
-      }
-      value
+      Try(result.body)
+        .map {
+          case body if Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED, HTTPStatusCodes.NO_CONTENT).contains(result.status) =>
+            parseJson[JsObject](body) match {
+              case Right(_) => RequestResponse[Boolean](Option(true))
+              case Left(resp) => RequestResponse[Boolean](None, resp.message, hasError = true)
+            }
+
+          case body =>
+            getError[Boolean](result.status, result.statusText, body)
+        }
+        .getOrElse(getError[Boolean](result.status, result.statusText))
   }
 
-  private def get(requestUrl: String): Either[ResponseError, JsValue] = withClient {
+  private def get[T](requestUrl: String): Either[RequestResponse[T], JsValue] = withClient {
     client =>
       val url = generateUrl(requestUrl)
       val jpromise = withAuthentication(
@@ -148,23 +138,55 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
       ).get()
       val result = Await.result(jpromise, requestTimeout)
 
-      val value = if (Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status)) {
-        val body = result.body
-        parseJson(body)
-      } else {
-        Left(ResponseError(java.util.UUID.randomUUID().toString, result.statusText, result.statusText))
-      }
-      value
+      Try(result.body)
+        .map {
+          case body if Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status) =>
+            parseJson[T](body)
+          case body =>
+            Left(getError[T](result.status, result.statusText, body))
+        }
+        .getOrElse(Left(getError[T](result.status, result.statusText)))
   }
 
-  private def parseJson(input: String): Either[ResponseError, JsValue] = {
+  private def valueOrError[T](json: JsValue)(implicit reader: Reads[T]) = {
+    json.validate[T] match {
+      case s: JsSuccess[T] =>
+        RequestResponse(Some(s.value))
+
+      case e: JsError =>
+        val msg =
+          s"""|Failed to validate json:
+              |$json
+              |JsError errors:
+              |${e.errors.mkString(System.lineSeparator)}
+                """.stripMargin
+        RequestResponse[T](None, message = msg, hasError = true)
+    }
+  }
+
+  private def getError[T](status: Int, statusText: String, body: String = "Failed to read response body") = {
+    val msg =
+      s"""|$status: $statusText
+          |Body:
+          |$body
+           """.stripMargin
+    RequestResponse[T](None, msg, hasError = true)
+  }
+
+  private def parseJson[T](input: String): Either[RequestResponse[T], JsValue] = {
     val json = Json.parse(input)
 
-    val errorOpt = (json \ "errors").asOpt[Seq[ResponseError]].flatMap(_.headOption)
+    val errorOpt = (json \ "errors")
+      .asOpt[Seq[ResponseError]]
+      .map(_.map { error =>
+        s"""|Context: ${error.context.getOrElse("None")}
+            |Exception: ${error.exceptionName.getOrElse("None")}
+            |Message: ${error.message}
+         """.stripMargin
+      }.mkString(Properties.lineSeparator))
 
-    errorOpt.map {
-      error =>
-        Left(error)
+    errorOpt.map { error =>
+      Left(RequestResponse[T](None, error, hasError = true))
     }.getOrElse(Right(json))
   }
 
