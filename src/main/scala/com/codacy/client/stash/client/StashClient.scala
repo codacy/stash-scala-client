@@ -116,18 +116,22 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
       ).delete()
       val result = Await.result(jpromise, requestTimeout)
 
-      Try(result.body)
-        .map {
-          case body if Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED, HTTPStatusCodes.NO_CONTENT).contains(result.status) =>
-            parseJson[JsObject](body) match {
-              case Right(_) => RequestResponse[Boolean](Option(true))
-              case Left(resp) => RequestResponse[Boolean](None, resp.message, hasError = true)
-            }
+      if (HTTPStatusCodes.NO_CONTENT == result.status) {
+        RequestResponse[Boolean](Option(true))
+      } else {
+        Try(result.body)
+          .map {
+            case body if Seq(HTTPStatusCodes.OK).contains(result.status) =>
+              parseJson[JsObject](body) match {
+                case Right(_) => RequestResponse[Boolean](Option(true))
+                case Left(resp) => RequestResponse[Boolean](None, resp.message, hasError = true)
+              }
 
-          case body =>
-            getError[Boolean](result.status, result.statusText, body)
-        }
-        .getOrElse(getError[Boolean](result.status, result.statusText))
+            case body =>
+              getError[Boolean](result.status, result.statusText, body)
+          }
+          .getOrElse(getError[Boolean](result.status, result.statusText))
+      }
   }
 
   private def get[T](requestUrl: String): Either[RequestResponse[T], JsValue] = withClient {
