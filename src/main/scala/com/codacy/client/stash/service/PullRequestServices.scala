@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{Commit, PullRequest, PullRequestComment}
+import com.codacy.client.stash.{Commit, PullRequest, PullRequestComment, PullRequestReviewers}
 import play.api.libs.json._
 
 class PullRequestServices(client: StashClient) {
@@ -67,5 +67,11 @@ class PullRequestServices(client: StashClient) {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments/$commentId?version=0"
 
     client.delete(url)
+  }
+
+  def getPullRequestsReviewers(projectKey: String, repository: String, prId: Long): RequestResponse[PullRequestReviewers] = {
+    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId"
+
+    client.execute(Request(url, classOf[PullRequestReviewers]))
   }
 }
