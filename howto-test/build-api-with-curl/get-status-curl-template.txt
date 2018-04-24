@@ -1,0 +1,1 @@
+curl -u <username>:<password> -X GET http://some-stash-server:7990/rest/build-status/1.0/commits/<some-hash>

@@ -1,0 +1,7 @@
+{
+	"state": "INPROGRESS",
+	"key": "REPO-MASTER",
+	"name": "REPO-MASTER-42",
+	"url": "https://whatever.buildserver.com/browse/REPO-MASTER-42",
+	"description": "Changes by Whomever"
+}
