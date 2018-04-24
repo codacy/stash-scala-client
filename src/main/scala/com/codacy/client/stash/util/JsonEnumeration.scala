@@ -8,6 +8,6 @@ trait JsonEnumeration extends Enumeration {
   implicit lazy val format = Format(Implicits.enumReads(self), Implicits.enumWrites)
 
   def findByName(name: String): Option[Value] = {
-    values.find(v => v.toString.toLowerCase == name.toLowerCase)
+    values.find(v => name.equalsIgnoreCase(v.toString))
   }
 }
