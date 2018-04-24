@@ -28,7 +28,7 @@ case class TimestampedBuildStatus(
   name: String,
   url: String,
   description: String,
-  dateAdded: String
+  dateAdded: Long
 )
 
 object TimestampedBuildStatus {
