@@ -100,7 +100,8 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
             case Right(json) => valueOrError[T](json)
             case Left(response) => response
           }
-
+        case _ if result.status == HTTPStatusCodes.NO_CONTENT =>
+          RequestResponse[T](None)
         case body =>
           getError[T](result.status, result.statusText, body)
       }

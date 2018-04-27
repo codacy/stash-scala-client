@@ -1,8 +1,8 @@
 package com.codacy.client.stash
 
 import com.codacy.client.stash.util.JsonEnumeration
-
-import play.api.libs.json.Json
+import org.joda.time.DateTime
+import play.api.libs.json.{Json, Reads}
 
 object CommitStatus extends JsonEnumeration {
   val InProgress = Value("INPROGRESS")
@@ -28,9 +28,10 @@ case class TimestampedBuildStatus(
   name: String,
   url: String,
   description: String,
-  dateAdded: Long
+  dateAdded: DateTime
 )
 
 object TimestampedBuildStatus {
+  implicit val datetimeReader: Reads[DateTime] = Reads.DefaultJodaDateReads
   implicit val fmt = Json.format[TimestampedBuildStatus]
 }

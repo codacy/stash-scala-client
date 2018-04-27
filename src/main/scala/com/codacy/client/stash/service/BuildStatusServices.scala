@@ -17,8 +17,8 @@ class BuildStatusServices(client: StashClient) {
   /*
    * Creates a build status for the given commit.
    */
-  def createBuildStatus(commit: String, buildStatus: BuildStatus): RequestResponse[BuildStatus] = {
-    client.postJson(Request(urlPath(commit), classOf[BuildStatus]), statusPayload(buildStatus))
+  def createBuildStatus(commit: String, buildStatus: BuildStatus): RequestResponse[String] = {
+    client.postJson(Request(urlPath(commit), classOf[String]), statusPayload(buildStatus))
   }
 
   /*
@@ -32,11 +32,11 @@ class BuildStatusServices(client: StashClient) {
 
   private def statusPayload(buildStatus: BuildStatus): JsValue = {
     Json.obj(
-      "state" -> Seq(buildStatus.state.toString),
-      "key" -> Seq(buildStatus.key),
-      "name" -> Seq(buildStatus.name),
-      "url" -> Seq(buildStatus.url),
-      "description" -> Seq(buildStatus.description)
+      "state" -> buildStatus.state.toString,
+      "key" -> buildStatus.key,
+      "name" -> buildStatus.name,
+      "url" -> buildStatus.url,
+      "description" -> buildStatus.description
     )
   }
 }
