@@ -14,7 +14,9 @@ resolvers += "Typesafe maven repository" at "http://repo.typesafe.com/typesafe/m
 
 libraryDependencies ++= Seq(
   jodaTime,
-  playWS
+  playWS,
+  scalaTest,
+  mockito
 )
 
 organization := "com.codacy"
