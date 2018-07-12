@@ -22,3 +22,9 @@ object SshKeySimple {
       .getOrElse(JsError("could not retrive ssh key"))
   }
 }
+
+case class SshKeyByUSer(id: Long, text: String, label: String)
+
+object SshKeyByUSer {
+  implicit val fmt = Json.format[SshKeyByUSer]
+}
