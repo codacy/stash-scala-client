@@ -1,14 +1,12 @@
 package com.codacy.client.stash.helpers
 
 import java.io.ByteArrayOutputStream
-
 import com.jcraft.jsch._
 
 object SSHKeyGenerator {
 
   def generateKey(keyType: Int = KeyPair.RSA, size: Int = 4096): (String, String) = {
 
-    try {
       val keyPair = KeyPair.genKeyPair(new JSch(), keyType, size)
 
       val publicStream = new ByteArrayOutputStream
@@ -19,7 +17,6 @@ object SSHKeyGenerator {
 
       (publicStream.toString("UTF-8"), privateStream.toString("UTF-8"))
 
-    }
   }
 
 }

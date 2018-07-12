@@ -42,19 +42,19 @@ class UserServicesTest extends FlatSpec with Matchers with MockitoSugar {
       auth <- Some(new BasicAuthenticator(username, password))
     } yield {
       val service =
-        new UserServices(
-          new StashClient(
-            baseUrl,
-            Some(auth)))
+        new UserServices(new StashClient(baseUrl, Some(auth)))
 
       val keys = SSHKeyGenerator.generateKey()
-      val response = keys match {
-        case (publicKey, _) =>
-          service.createUserKey(publicKey)
+
+      val response = keys match { case (publicKey, _) =>
+        service.createUserKey(publicKey)
       }
+
       response.hasError shouldBe false
 
-      service.deleteUserKey()
+      response.value.map { key =>
+        service.deleteUserKey(key.id)
+      }
 
     }).getOrElse(fail("Missing auth properties"))
   }

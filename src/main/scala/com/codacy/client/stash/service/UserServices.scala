@@ -50,10 +50,10 @@ class UserServices(client: StashClient) {
   }
 
   /*
- * Remove all ssh keys from a user
+ * Remove specific ssh keys from an authenticated user
  */
-  def deleteUserKey(): RequestResponse[Boolean] =  {
-    val url = "/rest/ssh/1.0/keys"
+  def deleteUserKey(keyId: Long): RequestResponse[Boolean] =  {
+    val url = s"/rest/ssh/1.0/keys/$keyId"
 
     client.delete(url)
   }
