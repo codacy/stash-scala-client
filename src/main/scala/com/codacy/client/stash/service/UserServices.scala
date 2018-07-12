@@ -40,7 +40,7 @@ class UserServices(client: StashClient) {
    * Add a new ssh key an authenticated user
    */
   def createUserKey(key: String): RequestResponse[UserSshKey] =  {
-    val url = "/rest/ssh/1.0/keys?"
+    val url = "/rest/ssh/1.0/keys"
 
     val values = Json.obj(
       "text" -> key
