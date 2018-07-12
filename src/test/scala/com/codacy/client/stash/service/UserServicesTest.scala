@@ -1,15 +1,12 @@
 package com.codacy.client.stash.service
 
-import com.codacy.client.stash.TimestampedBuildStatus._
-import com.codacy.client.stash.client.auth.BasicAuthenticator
-import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
 import com.codacy.client.stash._
-import org.joda.time.DateTime
-import org.mockito.Matchers._
-import org.mockito.Mockito._
-import org.scalatest.{Matchers, _}
+import com.codacy.client.stash.client.StashClient
+import com.codacy.client.stash.client.auth.BasicAuthenticator
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.{Matchers, _}
 import play.api.libs.json.{JsResult, Json}
+import com.codacy.client.stash.helpers.SSHKeyGenerator
 
 class UserServicesTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -26,17 +23,14 @@ class UserServicesTest extends FlatSpec with Matchers with MockitoSugar {
 
     // WHEN
     val json = Json.parse(jsonText)
-    val value: JsResult[SshKeyByUSer] = json.validate[SshKeyByUSer]
+    val value: JsResult[UserSshKey] = json.validate[UserSshKey]
 
     // THEN
-    value.fold(e =>
-      fail(s"$e"),
-      sshKey => {
-        sshKey.id shouldBe 1
-        sshKey.text shouldBe "ssh-rsa test123"
-        sshKey.label shouldBe "test123"
-      }
-    )
+    value.fold(e => fail(s"$e"), sshKey => {
+      sshKey.id shouldBe 1
+      sshKey.text shouldBe "ssh-rsa test123"
+      sshKey.label shouldBe "test123"
+    })
   }
 
   "UserServices.createUserKey()" should "create a status with no errors returned" in {
@@ -48,15 +42,22 @@ class UserServicesTest extends FlatSpec with Matchers with MockitoSugar {
       auth <- Some(new BasicAuthenticator(username, password))
     } yield {
       val service =
-        new UserServices(new StashClient(baseUrl, Some(auth)))
+        new UserServices(
+          new StashClient(
+            baseUrl,
+            Some(new BasicAuthenticator(username, password))))
 
-      val response =
-        service.createUserKey("1234")
+      val keys = SSHKeyGenerator.generateKey()
+      val response = keys match {
+        case (publicKey, _) =>
+          service.createUserKey(publicKey)
+      }
 
       response.hasError shouldBe false
 
-    }).getOrElse(fail("Missing auth properties"))
+      service.deleteUserKey()
 
+    }).getOrElse(fail("Missing auth properties"))
   }
 
 }

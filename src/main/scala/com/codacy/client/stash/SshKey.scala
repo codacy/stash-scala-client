@@ -23,8 +23,8 @@ object SshKeySimple {
   }
 }
 
-case class SshKeyByUSer(id: Long, text: String, label: String)
+case class UserSshKey(id: Long, text: String, label: String)
 
-object SshKeyByUSer {
-  implicit val fmt = Json.format[SshKeyByUSer]
+object UserSshKey {
+  implicit val fmt = Json.format[UserSshKey]
 }
