@@ -45,14 +45,13 @@ class UserServicesTest extends FlatSpec with Matchers with MockitoSugar {
         new UserServices(
           new StashClient(
             baseUrl,
-            Some(new BasicAuthenticator(username, password))))
+            Some(auth)))
 
       val keys = SSHKeyGenerator.generateKey()
       val response = keys match {
         case (publicKey, _) =>
           service.createUserKey(publicKey)
       }
-
       response.hasError shouldBe false
 
       service.deleteUserKey()
