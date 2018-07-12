@@ -11,4 +11,6 @@ object Dependencies {
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 
   lazy val mockito = "org.mockito" % "mockito-all" % "1.10.19" % "test"
+
+  lazy val jsch = "com.jcraft" % "jsch" % "0.1.54" % "test"
 }

@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{SshKey, User}
+import com.codacy.client.stash.{SshKey, User, UserSshKey}
 import play.api.libs.json.Json
 
 class UserServices(client: StashClient) {
@@ -35,5 +35,28 @@ class UserServices(client: StashClient) {
 
     client.postJson(Request(url, classOf[SshKey]), values)
   }
+
+  /*
+   * Add a new ssh key an authenticated user
+   */
+  def createUserKey(key: String): RequestResponse[UserSshKey] =  {
+    val url = "/rest/ssh/1.0/keys"
+
+    val values = Json.obj(
+      "text" -> key
+    )
+
+    client.postJson(Request(url, classOf[UserSshKey]), values)
+  }
+
+  /*
+ * Remove specific ssh keys from an authenticated user
+ */
+  def deleteUserKey(keyId: Long): RequestResponse[Boolean] =  {
+    val url = s"/rest/ssh/1.0/keys/$keyId"
+
+    client.delete(url)
+  }
+
 
 }

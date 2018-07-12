@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   jodaTime,
   playWS,
   scalaTest,
-  mockito
+  mockito,
+  jsch
 )
 
 organization := "com.codacy"
