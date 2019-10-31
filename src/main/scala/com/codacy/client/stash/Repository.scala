@@ -3,8 +3,7 @@ package com.codacy.client.stash
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class Repository(slug: String, name: String, scm: String, public: Boolean,
-                      cloneUrls: Seq[RepositoryUrl])
+case class Repository(slug: String, name: String, scm: String, public: Boolean, cloneUrls: Seq[RepositoryUrl])
 
 object Repository {
   implicit val reader: Reads[Repository] = {
@@ -12,8 +11,7 @@ object Repository {
       (__ \ "name").read[String] and
       (__ \ "scmId").read[String] and
       (__ \ "public").read[Boolean] and
-      (__ \ "links" \ "clone").read[Seq[JsValue]].map(parseLinks)
-      ) (Repository.apply _)
+      (__ \ "links" \ "clone").read[Seq[JsValue]].map(parseLinks))(Repository.apply _)
   }
 
   private def parseLinks(links: Seq[JsValue]): Seq[RepositoryUrl] = {

@@ -10,5 +10,5 @@ object ResponseError {
     (__ \ "context").readNullable[String] and
       (__ \ "message").read[String] and
       (__ \ "exceptionName").readNullable[String]
-    ) (ResponseError.apply _)
+  )(ResponseError.apply _)
 }

@@ -1,28 +1,13 @@
 package com.codacy.client.stash.client
 
-import com.codacy.client.stash.client.auth.{Authenticator, OAuth1Authenticator}
-import com.codacy.client.stash.util.HTTPStatusCodes
-import com.ning.http.client.{AsyncHttpClient, AsyncHttpClientConfigBean}
-import play.api.http.{ContentTypeOf, Writeable}
+import com.codacy.client.stash.client.auth.Authenticator
 import play.api.libs.json._
-import play.api.libs.ws.WSRequest
-import play.api.libs.ws.ning.NingWSClient
+import scalaj.http.{Http, HttpRequest, StringBodyConnectFunc}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.util.{Properties, Try}
+import scala.util.Properties
+import scala.util.control.NonFatal
 
-class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, acceptAllCertificates: Boolean = false) {
-  // Keep these 2 constructors just for backward compatibility
-  @deprecated("Please pass an OAuth1Authenticator(key, secretKey, token secretToken) into StashClient.", "3.0.4")
-  def this(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String) =
-    this(baseUrl, Some(new OAuth1Authenticator(key, secretKey, token, secretToken)))
-
-  @deprecated("Please pass an OAuth1Authenticator(key, secretKey, token secretToken) into StashClient.", "3.0.4")
-  def this(baseUrl: String, key: String, secretKey: String, token: String, secretToken: String, acceptAllCertificates: Boolean) =
-    this(baseUrl, Some(new OAuth1Authenticator(key, secretKey, token, secretToken)), acceptAllCertificates)
-
-  private lazy val requestTimeout = Duration(10, SECONDS)
+class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
 
   /*
    * Does an API request and parses the json output into a class
@@ -46,7 +31,8 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
         } yield {
           val cleanUrl = request.url.takeWhile(_ != '?')
           val nextUrl = s"$cleanUrl?start=$nextPageStart"
-          executePaginated(Request(nextUrl, request.classType)).value.getOrElse(Seq.empty)
+          executePaginated(Request(nextUrl, request.classType)).value
+            .getOrElse(Seq.empty)
         }).getOrElse(Seq.empty)
 
         RequestResponse(Some((json \ "values").as[Seq[T]] ++ nextRepos))
@@ -55,105 +41,101 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
     }
   }
 
-  def postForm[T](request: Request[T], values: Map[String, Seq[String]])(implicit reader: Reads[T]): RequestResponse[T] = {
-    performRequest("POST", request, values)
-  }
-
   def postJson[T](request: Request[T], values: JsValue)(implicit reader: Reads[T]): RequestResponse[T] = {
     performRequest("POST", request, values)
-  }
-
-  def putForm[T](request: Request[T], values: Map[String, Seq[String]])(implicit reader: Reads[T]): RequestResponse[T] = {
-    performRequest("PUT", request, values)
   }
 
   def putJson[T](request: Request[T], values: JsValue)(implicit reader: Reads[T]): RequestResponse[T] = {
     performRequest("PUT", request, values)
   }
 
-  // Wrap request with authentication options
-  private def withAuthentication(request: WSRequest): WSRequest = authenticator match {
-    case Some(auth) => auth.withAuthentication(request)
-    case None => request
-  }
+  //   Wrap request with authentication options
+  private def withAuthentication(request: HttpRequest): HttpRequest =
+    authenticator match {
+      case Some(auth) => auth.withAuthentication(request)
+      case None => request
+    }
 
   /*
    * Does an API request
    */
-  private def performRequest[D, T](method: String, request: Request[T], values: D)
-                                  (implicit reader: Reads[T], writer: Writeable[D], contentType: ContentTypeOf[D]): RequestResponse[T] = {
-    val url = generateUrl(request.url)
+  private def performRequest[T](method: String, request: Request[T], values: JsValue)(
+      implicit reader: Reads[T]
+  ): RequestResponse[T] = {
+    doRequest[T](request.url, method, Option(values)) match {
+      case Right((200 /*HTTPStatusCodes.OK*/ | 201 /*HTTPStatusCodes.CREATED*/, body)) =>
+        parseJson[T](body).fold(identity, { jsValue =>
+          valueOrError[T](jsValue)
+        })
 
-    withClient { client =>
-      val jpromise = withAuthentication(
-        client
-          .url(url)
-          .withFollowRedirects(follow = true)
-          .withMethod(method)
-          .withBody(values)
-      ).execute()
-      val result = Await.result(jpromise, requestTimeout)
+      case Right((204 /*HTTPStatusCodes.NO_CONTENT*/, _)) =>
+        RequestResponse[T](None)
 
-      Try(result.body).map {
-        case body if Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status) =>
-          parseJson[T](body) match {
-            case Right(json) => valueOrError[T](json)
-            case Left(response) => response
-          }
-        case _ if result.status == HTTPStatusCodes.NO_CONTENT =>
-          RequestResponse[T](None)
-        case body =>
-          getError[T](result.status, result.statusText, body)
-      }
-        .getOrElse(getError[T](result.status, result.statusText))
+      case Right((statusCode, body)) =>
+        getError[T](statusCode, statusCode.toString, body)
+
+      case Left(requestResponse) =>
+        requestResponse
     }
   }
 
-  def delete(requestUrl: String): RequestResponse[Boolean] = withClient {
-    client =>
-      val url = generateUrl(requestUrl)
-      val jpromise = withAuthentication(
-        client.url(url).withFollowRedirects(follow = true)
-      ).delete()
-      val result = Await.result(jpromise, requestTimeout)
-
-      if (HTTPStatusCodes.NO_CONTENT == result.status) {
+  def delete(requestUrl: String): RequestResponse[Boolean] = {
+    doRequest[Boolean](requestUrl, "DELETE", None) match {
+      case Right((204 /*HTTPStatusCodes.NO_CONTENT*/, _)) =>
         RequestResponse[Boolean](Option(true))
-      } else {
-        Try(result.body)
-          .map {
-            case body if Seq(HTTPStatusCodes.OK).contains(result.status) =>
-              parseJson[JsObject](body) match {
-                case Right(_) => RequestResponse[Boolean](Option(true))
-                case Left(resp) => RequestResponse[Boolean](None, resp.message, hasError = true)
-              }
 
-            case body =>
-              getError[Boolean](result.status, result.statusText, body)
-          }
-          .getOrElse(getError[Boolean](result.status, result.statusText))
-      }
+      case Right((200 /*HTTPStatusCodes.OK*/, body)) =>
+        parseJson[JsObject](body).fold({ error =>
+          RequestResponse[Boolean](None, error.message, hasError = true)
+        }, { _ =>
+          RequestResponse[Boolean](Option(true))
+        })
+
+      case Right((statusCode, body)) =>
+        getError[Boolean](statusCode, statusCode.toString, body)
+
+      case Left(requestResponse) =>
+        requestResponse
+    }
   }
 
-  private def get[T](requestUrl: String): Either[RequestResponse[T], JsValue] = withClient {
-    client =>
-      val url = generateUrl(requestUrl)
-      val jpromise = withAuthentication(
-        client.url(url).withFollowRedirects(follow = true)
-      ).get()
-      val result = Await.result(jpromise, requestTimeout)
-
-      Try(result.body)
-        .map {
-          case body if Seq(HTTPStatusCodes.OK, HTTPStatusCodes.CREATED).contains(result.status) =>
-            parseJson[T](body)
-          case body =>
-            Left(getError[T](result.status, result.statusText, body))
-        }
-        .getOrElse(Left(getError[T](result.status, result.statusText)))
+  private def get[T](requestUrl: String): Either[RequestResponse[T], JsValue] = {
+    doRequest[T](requestUrl, "GET", None) match {
+      case Right((200 /*HTTPStatusCodes.OK*/ | 201 /*HTTPStatusCodes.CREATED*/, body)) =>
+        parseJson[T](body)
+      case Right((statusCode, body)) =>
+        Left(getError[T](statusCode, statusCode.toString, body))
+      case Left(error) =>
+        Left(error)
+    }
   }
 
-  private def valueOrError[T](json: JsValue)(implicit reader: Reads[T]) = {
+  def doRequest[T](
+      requestPath: String,
+      method: String,
+      payload: Option[JsValue] = None
+  ): Either[RequestResponse[T], (Int, String)] = {
+    val url = generateUrl(requestPath)
+    try {
+      val baseRequest = Http(url).method(method)
+      val request = payload
+        .fold(baseRequest)(
+          p =>
+            // Supports PUT and POST of JSON
+            baseRequest
+              .header("content-type", "application/json")
+              .copy(connectFunc = StringBodyConnectFunc(Json.stringify(p)))
+        )
+      val authenticatedRequest = withAuthentication(request)
+      val response = authenticatedRequest.asString
+      Right((response.code, response.body))
+    } catch {
+      case NonFatal(exception) =>
+        Left(RequestResponse[T](None, exception.getMessage, hasError = true))
+    }
+  }
+
+  private def valueOrError[T](json: JsValue)(implicit reader: Reads[T]): RequestResponse[T] = {
     json.validate[T] match {
       case s: JsSuccess[T] =>
         RequestResponse(Some(s.value))
@@ -169,7 +151,11 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
     }
   }
 
-  private def getError[T](status: Int, statusText: String, body: String = "Failed to read response body") = {
+  private def getError[T](
+      status: Int,
+      statusText: String,
+      body: String = "Failed to read response body"
+  ): RequestResponse[T] = {
     val msg =
       s"""|$status: $statusText
           |Body:
@@ -190,25 +176,13 @@ class StashClient(baseUrl: String, authenticator: Option[Authenticator] = None, 
          """.stripMargin
       }.mkString(Properties.lineSeparator))
 
-    errorOpt.map { error =>
-      Left(RequestResponse[T](None, error, hasError = true))
-    }.getOrElse(Right(json))
+    errorOpt
+      .map { error =>
+        Left(RequestResponse[T](None, error, hasError = true))
+      }
+      .getOrElse(Right(json))
   }
 
-  private def generateUrl(endpoint: String) = s"$baseUrl$endpoint"
-
-  private def withClient[T](block: NingWSClient => T): T = {
-
-    val config = if (acceptAllCertificates) {
-      new AsyncHttpClientConfigBean().setAcceptAnyCertificate(true).setFollowRedirect(true)
-    } else {
-      new AsyncHttpClient().getConfig
-    }
-
-    val client = NingWSClient(config)
-    val result = block(client)
-    client.close()
-    result
-  }
+  private def generateUrl(endpoint: String) = s"$apiUrl$endpoint"
 
 }

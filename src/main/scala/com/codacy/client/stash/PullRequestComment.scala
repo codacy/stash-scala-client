@@ -12,5 +12,5 @@ object PullRequestComment {
       (__ \ "author").read[User] and
       (__ \ "text").read[String] and
       (__ \ "createdDate").read[Long].map(millis => new DateTime(millis))
-    ) (PullRequestComment.apply _)
+  )(PullRequestComment.apply _)
 }

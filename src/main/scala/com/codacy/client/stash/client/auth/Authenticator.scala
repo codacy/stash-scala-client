@@ -1,7 +1,7 @@
 package com.codacy.client.stash.client.auth
 
-import play.api.libs.ws.WSRequest
+import scalaj.http.HttpRequest
 
 trait Authenticator {
-  def withAuthentication(request: WSRequest): WSRequest
+  def withAuthentication(request: HttpRequest): HttpRequest
 }

@@ -1,0 +1,71 @@
+version: 2.1
+
+orbs:
+  codacy: codacy/base@1.0.1
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - codacy/checkout_and_version:
+          write_sbt_version: true
+      - codacy/sbt:
+          name: populate_cache
+          install_sbt_version: 1.2.8
+          persist_to_workspace: true
+          cmd: sbt -Dbuild.number=$(cat .version) ";set scalafmtUseIvy in ThisBuild := false;update"
+          requires:
+            - codacy/checkout_and_version
+      - codacy/sbt:
+          name: check_format
+          install_sbt_version: 1.2.8
+          cmd: sbt ";set scalafmtUseIvy in ThisBuild := false;scalafmt::test;test:scalafmt::test;sbt:scalafmt::test"
+          requires:
+            - populate_cache
+      - codacy/sbt:
+          name: compile
+          install_sbt_version: 1.2.8
+          persist_to_workspace: true
+          cmd: sbt compile test:compile
+          requires:
+            - populate_cache
+      - codacy/sbt:
+          name: test
+          install_sbt_version: 1.2.8
+          cmd: |
+            sbt coverage test
+            sbt coverageReport
+            sbt coverageAggregate
+            sbt codacyCoverage
+          requires:
+            - compile
+            - check_format
+      - codacy/sbt:
+          name: it_test
+          install_sbt_version: 1.2.8
+          cmd: sbt it:test
+          requires:
+            - compile
+            - check_format
+      - codacy/sbt:
+          name: tag
+          context: CodacyAWS
+          install_sbt_version: 1.2.8
+          cmd: |
+            sbt coverage test
+            sbt coverageReport
+            sbt coverageAggregate
+            sbt codacyCoverage
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - codacy/sbt:
+          name: publish
+          context: CodacyAWS
+          install_sbt_version: 1.2.8
+          cmd: sbt ";clean;retrieveGPGKeys;+publishSigned;sonatypeReleaseAll"
+          requires:
+            - tag

@@ -17,15 +17,15 @@ class RepositoryServices(client: StashClient) {
   /*
    * Creates a ssh key
    */
-  def createKey(projectKey: String, repo: String, key: String, permission: String = "REPO_READ"): RequestResponse[SshKeySimple] = {
+  def createKey(
+      projectKey: String,
+      repo: String,
+      key: String,
+      permission: String = "REPO_READ"
+  ): RequestResponse[SshKeySimple] = {
     val url = s"/rest/keys/1.0/projects/$projectKey/repos/$repo/ssh"
 
-    val values = Json.obj(
-      "key" -> Json.obj(
-        "text" -> key
-      ),
-      "permission" -> permission
-    )
+    val values = Json.obj("key" -> Json.obj("text" -> key), "permission" -> permission)
 
     client.postJson(Request(url, classOf[SshKeySimple]), values)
   }

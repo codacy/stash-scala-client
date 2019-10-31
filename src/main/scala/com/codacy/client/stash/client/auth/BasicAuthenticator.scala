@@ -1,6 +1,7 @@
 package com.codacy.client.stash.client.auth
-import play.api.libs.ws.{WSAuthScheme, WSRequest}
+import scalaj.http.HttpRequest
 
 class BasicAuthenticator(username: String, password: String) extends Authenticator {
-  override def withAuthentication(request: WSRequest) = request.withAuth(username, password, WSAuthScheme.BASIC)
+  override def withAuthentication(request: HttpRequest): HttpRequest =
+    request.auth(username, password)
 }

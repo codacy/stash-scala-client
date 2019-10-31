@@ -1,18 +1,3 @@
-import sbt._
+resolvers += "Spring Plugin Releases" at "https://repo.spring.io/plugins-release/"
 
-resolvers ++= Seq(
-  DefaultMavenRepository,
-  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-  "Bintray Repository" at "https://dl.bintray.com/sbt/ivy-releases/",
-  "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
-  Classpaths.typesafeReleases,
-  Classpaths.sbtPluginReleases
-)
-
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "0.5.0")
-
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
-
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.3")
-
-addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.2.1")
+addSbtPlugin("com.codacy" % "codacy-sbt-plugin" % "17.1.4")

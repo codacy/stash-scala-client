@@ -11,5 +11,5 @@ object User {
       (__ \ "emailAddress").readNullable[String] and
       (__ \ "displayName").read[String] and
       (__ \ "id").read[Long]
-    ) (User.apply _)
+  )(User.apply _)
 }

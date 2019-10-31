@@ -10,25 +10,19 @@ object CommitStatus extends JsonEnumeration {
   val Failed = Value("FAILED")
 }
 
-case class BuildStatus(
-  state: CommitStatus.Value,
-  key: String,
-  name: String,
-  url: String,
-  description: String
-)
+case class BuildStatus(state: CommitStatus.Value, key: String, name: String, url: String, description: String)
 
 object BuildStatus {
   implicit val fmt = Json.format[BuildStatus]
 }
 
 case class TimestampedBuildStatus(
-  state: CommitStatus.Value,
-  key: String,
-  name: String,
-  url: String,
-  description: String,
-  dateAdded: DateTime
+    state: CommitStatus.Value,
+    key: String,
+    name: String,
+    url: String,
+    description: String,
+    dateAdded: DateTime
 )
 
 object TimestampedBuildStatus {
