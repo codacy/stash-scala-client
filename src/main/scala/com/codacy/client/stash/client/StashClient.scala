@@ -63,12 +63,12 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
       implicit reader: Reads[T]
   ): RequestResponse[T] = {
     doRequest[T](request.url, method, Option(values)) match {
-      case Right((200 /*HTTPStatusCodes.OK*/ | 201 /*HTTPStatusCodes.CREATED*/, body)) =>
+      case Right((HTTPStatusCodes.OK | HTTPStatusCodes.CREATED, body)) =>
         parseJson[T](body).fold(identity, { jsValue =>
           valueOrError[T](jsValue)
         })
 
-      case Right((204 /*HTTPStatusCodes.NO_CONTENT*/, _)) =>
+      case Right((HTTPStatusCodes.NO_CONTENT, _)) =>
         RequestResponse[T](None)
 
       case Right((statusCode, body)) =>
@@ -81,10 +81,10 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
 
   def delete(requestUrl: String): RequestResponse[Boolean] = {
     doRequest[Boolean](requestUrl, "DELETE", None) match {
-      case Right((204 /*HTTPStatusCodes.NO_CONTENT*/, _)) =>
+      case Right((HTTPStatusCodes.NO_CONTENT, _)) =>
         RequestResponse[Boolean](Option(true))
 
-      case Right((200 /*HTTPStatusCodes.OK*/, body)) =>
+      case Right((HTTPStatusCodes.OK, body)) =>
         parseJson[JsObject](body).fold({ error =>
           RequestResponse[Boolean](None, error.message, hasError = true)
         }, { _ =>
@@ -101,7 +101,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
 
   private def get[T](requestUrl: String): Either[RequestResponse[T], JsValue] = {
     doRequest[T](requestUrl, "GET", None) match {
-      case Right((200 /*HTTPStatusCodes.OK*/ | 201 /*HTTPStatusCodes.CREATED*/, body)) =>
+      case Right((HTTPStatusCodes.OK | HTTPStatusCodes.CREATED, body)) =>
         parseJson[T](body)
       case Right((statusCode, body)) =>
         Left(getError[T](statusCode, statusCode.toString, body))

@@ -13,7 +13,7 @@ It is in a very early stage and all the contributions are welcome.
 ### Import in SBT
 
 ```
-"com.codacy" %% "stash-scala-client" % "<VERSION>>"
+"com.codacy" %% "stash-scala-client" % "<VERSION>"
 ```
 
 ### Use in code
