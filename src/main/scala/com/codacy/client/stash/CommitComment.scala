@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class CommitComment(id: Long, author: User, content: String, createdDate: DateTime)
+final case class CommitComment(id: Long, author: User, content: String, createdDate: DateTime)
 
 object CommitComment {
   implicit val reader: Reads[CommitComment] = (

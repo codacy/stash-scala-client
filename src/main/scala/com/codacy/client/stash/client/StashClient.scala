@@ -1,6 +1,7 @@
 package com.codacy.client.stash.client
 
 import com.codacy.client.stash.client.auth.Authenticator
+import com.codacy.client.stash.util.HTTPStatusCodes
 import play.api.libs.json._
 import scalaj.http.{Http, HttpRequest, StringBodyConnectFunc}
 

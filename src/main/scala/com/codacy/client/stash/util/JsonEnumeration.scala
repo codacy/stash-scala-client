@@ -10,4 +10,5 @@ trait JsonEnumeration extends Enumeration {
   def findByName(name: String): Option[Value] = {
     values.find(v => name.equalsIgnoreCase(v.toString))
   }
+
 }

@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class WebHook(
+final case class WebHook(
     id: Long,
     name: String,
     url: String,

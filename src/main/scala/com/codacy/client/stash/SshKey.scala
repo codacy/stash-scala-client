@@ -3,7 +3,7 @@ package com.codacy.client.stash
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class SshKey(id: Long, key: String, label: String)
+final case class SshKey(id: Long, key: String, label: String)
 
 object SshKey {
   implicit val reader: Reads[SshKey] = (
@@ -13,7 +13,7 @@ object SshKey {
   )(SshKey.apply _)
 }
 
-case class SshKeySimple(key: String)
+final case class SshKeySimple(key: String)
 
 object SshKeySimple {
   implicit val reader: Reads[SshKeySimple] = Reads { jsValue =>
@@ -24,8 +24,8 @@ object SshKeySimple {
   }
 }
 
-case class UserSshKey(id: Long, text: String, label: String)
+final case class UserSshKey(id: Long, text: String, label: String)
 
 object UserSshKey {
-  implicit val fmt = Json.format[UserSshKey]
+  implicit val fmt: Format[UserSshKey] = Json.format[UserSshKey]
 }

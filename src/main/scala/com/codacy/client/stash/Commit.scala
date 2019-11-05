@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class Commit(
+final case class Commit(
     hash: String,
     authorName: String,
     parents: Option[List[Parent]],
@@ -22,7 +22,7 @@ object Commit {
   )(Commit.apply _)
 }
 
-case class Parent(id: String, displayId: String)
+final case class Parent(id: String, displayId: String)
 
 object Parent {
   implicit val fmt: Format[Parent] = Json.format[Parent]

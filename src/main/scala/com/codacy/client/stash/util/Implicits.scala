@@ -25,5 +25,7 @@ object Implicits {
       val query = Option.apply(uri.getQuery).map(q => q + "&" + newQuery).getOrElse(newQuery)
       new URI(uri.getScheme, uri.getAuthority, uri.getPath, query, uri.getFragment)
     }
+
   }
+
 }
