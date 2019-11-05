@@ -14,9 +14,15 @@ class PullRequestServices(client: StashClient) {
    * Order: NEWEST | OLDEST
    *
    */
-  def getPullRequests(projectKey: String, repository: String, direction: String = "INCOMING",
-                      state: String = "OPEN", order: String = "NEWEST"): RequestResponse[Seq[PullRequest]] = {
-    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests?direction=$direction&state=$state&order=$order"
+  def getPullRequests(
+      projectKey: String,
+      repository: String,
+      direction: String = "INCOMING",
+      state: String = "OPEN",
+      order: String = "NEWEST"
+  ): RequestResponse[Seq[PullRequest]] = {
+    val url =
+      s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests?direction=$direction&state=$state&order=$order"
 
     client.executePaginated(Request(url, classOf[Seq[PullRequest]]))
   }
@@ -32,30 +38,40 @@ class PullRequestServices(client: StashClient) {
   }
 
   /*
- * Gets the list of comments of a pull request
- *
- */
-  def getPullRequestComments(projectKey: String, repository: String, prId: Long): RequestResponse[Seq[PullRequestComment]] = {
+   * Gets the list of comments of a pull request
+   *
+   */
+  def getPullRequestComments(
+      projectKey: String,
+      repository: String,
+      prId: Long
+  ): RequestResponse[Seq[PullRequestComment]] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId/comments"
 
     client.executePaginated(Request(url, classOf[Seq[PullRequestComment]]))
   }
 
   /*
-  * Comment a file in a pull request
-  */
-  def createComment(projectKey: String, repo: String, prId: Long, body: String, file: Option[String], line: Option[Int], lineType: String = "ADDED"): RequestResponse[PullRequestComment] = {
+   * Comment a file in a pull request
+   */
+  def createComment(
+      projectKey: String,
+      repo: String,
+      prId: Long,
+      body: String,
+      file: Option[String],
+      line: Option[Int],
+      lineType: String = "ADDED"
+  ): RequestResponse[PullRequestComment] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments"
 
-    val params = JsObject(file.map(filename => "path" -> JsString(filename)).toSeq ++
-      line.map(lineTo => "line" -> JsNumber(lineTo)) ++
-      Some("lineType" -> JsString(lineType))
+    val params = JsObject(
+      file.map(filename => "path" -> JsString(filename)).toSeq ++
+        line.map(lineTo => "line" -> JsNumber(lineTo)) ++
+        Some("lineType" -> JsString(lineType))
     )
 
-    val values = Json.obj(
-      "text" -> body,
-      "anchor" -> params
-    )
+    val values = Json.obj("text" -> body, "anchor" -> params)
 
     client.postJson(Request(url, classOf[PullRequestComment]), values)
   }
@@ -69,7 +85,11 @@ class PullRequestServices(client: StashClient) {
     client.delete(url)
   }
 
-  def getPullRequestsReviewers(projectKey: String, repository: String, prId: Long): RequestResponse[PullRequestReviewers] = {
+  def getPullRequestsReviewers(
+      projectKey: String,
+      repository: String,
+      prId: Long
+  ): RequestResponse[PullRequestReviewers] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId"
 
     client.execute(Request(url, classOf[PullRequestReviewers]))

@@ -7,6 +7,18 @@ import play.api.libs.json.Json
 class UserServices(client: StashClient) {
 
   /*
+   * Gets the basic information associated with the authenticated account.
+   */
+  def getUsername: RequestResponse[String] = {
+    client
+      .doRequest[String]("/plugins/servlet/applinks/whoami", "GET", None)
+      .fold(identity, {
+        case (200, body) => RequestResponse(Option(body))
+        case _ => RequestResponse(Option.empty, "", hasError = true)
+      })
+  }
+
+  /*
    * Gets the basic information associated with the token owner account.
    */
   def getUsers: RequestResponse[Seq[User]] = {
@@ -26,12 +38,7 @@ class UserServices(client: StashClient) {
   def createKey(projectKey: String, key: String, permission: String = "PROJECT_READ"): RequestResponse[SshKey] = {
     val url = s"/rest/keys/1.0/projects/$projectKey/ssh"
 
-    val values = Json.obj(
-      "key" -> Json.obj(
-        "text" -> key
-      ),
-      "permission" -> permission
-    )
+    val values = Json.obj("key" -> Json.obj("text" -> key), "permission" -> permission)
 
     client.postJson(Request(url, classOf[SshKey]), values)
   }
@@ -39,24 +46,21 @@ class UserServices(client: StashClient) {
   /*
    * Add a new ssh key an authenticated user
    */
-  def createUserKey(key: String): RequestResponse[UserSshKey] =  {
+  def createUserKey(key: String): RequestResponse[UserSshKey] = {
     val url = "/rest/ssh/1.0/keys"
 
-    val values = Json.obj(
-      "text" -> key
-    )
+    val values = Json.obj("text" -> key)
 
     client.postJson(Request(url, classOf[UserSshKey]), values)
   }
 
   /*
- * Remove specific ssh keys from an authenticated user
- */
-  def deleteUserKey(keyId: Long): RequestResponse[Boolean] =  {
+   * Remove specific ssh keys from an authenticated user
+   */
+  def deleteUserKey(keyId: Long): RequestResponse[Boolean] = {
     val url = s"/rest/ssh/1.0/keys/$keyId"
 
     client.delete(url)
   }
-
 
 }

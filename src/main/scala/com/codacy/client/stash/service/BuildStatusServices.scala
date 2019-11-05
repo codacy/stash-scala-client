@@ -24,7 +24,12 @@ class BuildStatusServices(client: StashClient) {
   /*
    * Update the build status for the given commit.
    */
-  def updateBuildStatus(owner: String, repository: String, commit: String, buildStatus: BuildStatus): RequestResponse[BuildStatus] = {
+  def updateBuildStatus(
+      owner: String,
+      repository: String,
+      commit: String,
+      buildStatus: BuildStatus
+  ): RequestResponse[BuildStatus] = {
     client.postJson(Request(urlPath(commit), classOf[BuildStatus]), statusPayload(buildStatus))
   }
 

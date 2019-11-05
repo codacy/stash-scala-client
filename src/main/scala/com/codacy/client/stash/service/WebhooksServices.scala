@@ -12,13 +12,14 @@ class WebhooksServices(client: StashClient) {
     client.executePaginated(Request(url, classOf[Seq[WebHook]]))
   }
 
-  def create(projectKey: String,
-             repositorySlug: String,
-             name: String,
-             hookCallbakUrl: String,
-             events: Set[String],
-             active: Boolean
-            ): RequestResponse[WebHook] = {
+  def create(
+      projectKey: String,
+      repositorySlug: String,
+      name: String,
+      hookCallbakUrl: String,
+      events: Set[String],
+      active: Boolean
+  ): RequestResponse[WebHook] = {
     val url = s"/rest/api/latest/projects/$projectKey/repos/$repositorySlug/webhooks"
 
     val values = Json.obj(
@@ -32,14 +33,15 @@ class WebhooksServices(client: StashClient) {
     client.postJson(Request(url, classOf[WebHook]), values)
   }
 
-  def update(projectKey: String,
-             repositorySlug: String,
-             webhookId: Long,
-             name: String,
-             hookCallbakUrl: String,
-             events: Set[String],
-             active: Boolean
-            ): RequestResponse[WebHook] = {
+  def update(
+      projectKey: String,
+      repositorySlug: String,
+      webhookId: Long,
+      name: String,
+      hookCallbakUrl: String,
+      events: Set[String],
+      active: Boolean
+  ): RequestResponse[WebHook] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repositorySlug/webhooks/$webhookId"
 
     val values = Json.obj(

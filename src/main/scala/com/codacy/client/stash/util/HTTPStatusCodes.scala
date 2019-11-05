@@ -1,8 +1,6 @@
 package com.codacy.client.stash.util
 
-object HTTPStatusCodes extends Enumeration {
-  type HTTPStatusCodes = Value
-
+object HTTPStatusCodes {
   val OK = 200
   val CREATED = 201
   val NO_CONTENT = 204

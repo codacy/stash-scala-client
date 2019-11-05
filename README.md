@@ -1,22 +1,22 @@
-[![Circle CI](https://circleci.com/gh/codacy/stash-scala-client/tree/master.svg?style=shield)](https://circleci.com/gh/codacy/stash-scala-client/tree/master)
-[![Codacy Badge](https://www.codacy.com/project/badge/grade/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/app/Codacy/stash-scala-client)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11)
+# stash-scala-client
 
-# Stash Scala client
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/manual/Codacy/stash-scala-client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=codacy/stash-scala-client&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/manual/Codacy/stash-scala-client?utm_source=github.com&utm_medium=referral&utm_content=codacy/stash-scala-client&utm_campaign=Badge_Coverage)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11)
 
 This is a simple library that aims to have basic functions of the Stash API.
 This library was meant to support Codacy when interacting with Stash.
 It is in a very early stage and all the contributions are welcome.
 
-### Usage
+## Usage
 
-Import on SBT:
+### Import in SBT
 
 ```
-"com.codacy" %% "stash-scala-client" % "1.1.5"
+"com.codacy" %% "stash-scala-client" % "<VERSION>"
 ```
 
-Usage:
+### Use in code
 
 ```scala
 val client = new StashClient("baseUrl", "consumerKey", "consumerSecret", "token", "secretToken")
@@ -26,19 +26,22 @@ val repoServices = new RepositoryServices(client)
 val response = repoServices.getRepositories("projectKey")
 ```
 
-### Creators
+## Creators
 
 1. Rodrigo Fernandes
 
-### Contributors
+## Contributors
 
 1. Pedro Rijo
 
-## What is Codacy?
+## What is Codacy
 
-[Codacy](https://www.codacy.com/) is an Automated Code Review Tool that monitors your technical debt, helps you improve your code quality, teaches best practices to your developers, and helps you save time in Code Reviews.
+[Codacy](https://www.codacy.com/) is an Automated Code Review Tool that monitors your technical debt,
+helps you improve your code quality,
+teaches best practices to your developers,
+and helps you save time in Code Reviews.
 
-### Among Codacy’s features:
+### Among Codacy’s features
 
 - Identify new Static Analysis issues
 - Commit and Pull Request Analysis with GitHub, BitBucket/Stash, GitLab (and also direct git repositories)
