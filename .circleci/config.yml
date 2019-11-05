@@ -34,16 +34,16 @@ workflows:
           install_sbt_version: 1.3.3
           cmd: |
             sbt ";coverage;test"
-            sbt coverageReport
-            sbt coverageAggregate
-            sbt codacyCoverage
+            sbt ";coverageReport"
+            sbt ";coverageAggregate"
+            sbt ";codacyCoverage"
           requires:
             - compile
             - check_format
       - codacy/sbt:
           name: it_test
           install_sbt_version: 1.3.3
-          cmd: sbt it:test
+          cmd: sbt ";it:test"
           requires:
             - compile
             - check_format
@@ -60,6 +60,9 @@ workflows:
           name: publish
           context: CodacyAWS
           install_sbt_version: 1.3.3
-          cmd: sbt ";clean;retrieveGPGKeys;+publishSigned;sonatypeReleaseAll"
+          cmd: |
+            sbt ";retrieveGPGKeys"
+            sbt ";++2.11.12;publishSigned;sonatypeRelease"
+            sbt ";++2.12.10;publishSigned;sonatypeRelease"
           requires:
             - tag_version
