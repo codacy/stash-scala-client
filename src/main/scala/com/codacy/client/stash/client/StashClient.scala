@@ -152,11 +152,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
     }
   }
 
-  private def getError[T](
-      status: Int,
-      statusText: String,
-      body: String = "Failed to read response body"
-  ): RequestResponse[T] = {
+  private def getError[T](status: Int, statusText: String, body: String): RequestResponse[T] = {
     val msg =
       s"""|$status: $statusText
           |Body:

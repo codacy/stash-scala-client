@@ -13,7 +13,7 @@ workflows:
           name: populate_cache
           install_sbt_version: 1.3.3
           persist_to_workspace: true
-          cmd: sbt ";set scalafmtUseIvy in ThisBuild := false;update"
+          cmd: sbt ";set scalafmtUseIvy in ThisBuild := false;+update"
           requires:
             - codacy/checkout_and_version
       - codacy/sbt:
@@ -26,7 +26,7 @@ workflows:
           name: compile
           install_sbt_version: 1.3.3
           persist_to_workspace: true
-          cmd: sbt ";compile;test:compile"
+          cmd: sbt ";+compile;+test:compile"
           requires:
             - populate_cache
       - codacy/sbt:

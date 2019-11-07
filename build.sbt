@@ -6,10 +6,10 @@ val stashScalaClient = project
   .settings(Defaults.itSettings)
   .settings(
     name := "stash-scala-client",
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
+    scalaVersion := crossScalaVersions.value(1),
+    crossScalaVersions := Seq("2.11.12", "2.12.10"),
     scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Ywarn-adapted-args", "-Xlint"),
-    libraryDependencies ++= Seq(jodaTime, scalajHttp, Dependencies.playJson(scalaVersion.value)),
+    libraryDependencies ++= Seq(jodaTime, scalajHttp) ++ Dependencies.playJson(scalaVersion.value),
     libraryDependencies ++= Seq(scalatest, mockitoScalaScalatest, jsch).map(_ % "test,it"),
     organizationName := "Codacy",
     organizationHomepage := Some(new URL("https://www.codacy.com")),
@@ -28,3 +28,10 @@ val stashScalaClient = project
     pgpPassphrase := Option(System.getenv("SONATYPE_GPG_PASSPHRASE")).map(_.toCharArray),
     publicMvnPublish
   )
+  .settings(unmanagedSourceDirectories.in(Compile) += {
+    Dependencies.playJson(scalaVersion.value).head.revision match {
+      case "2.5.19" => baseDirectory.in(Compile).value / "src" / "main" / s"play_json_2.5"
+      case "2.7.4" => baseDirectory.in(Compile).value / "src" / "main" / s"play_json_2.7"
+      case _ => throw new Exception("Unsupported Play JSON version")
+    }
+  })
