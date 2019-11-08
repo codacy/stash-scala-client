@@ -26,6 +26,6 @@ final case class TimestampedBuildStatus(
 )
 
 object TimestampedBuildStatus {
-  implicit val datetimeReader: Reads[DateTime] = Reads.DefaultJodaDateReads
-  implicit val fmt: Format[TimestampedBuildStatus] = Json.format[TimestampedBuildStatus]
+  import DateTimeImplicits.datetimeReads
+  implicit val fmt: Reads[TimestampedBuildStatus] = Json.reads[TimestampedBuildStatus]
 }

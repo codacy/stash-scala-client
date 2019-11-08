@@ -15,6 +15,7 @@ final case class WebHook(
 )
 
 object WebHook {
+  import DateTimeImplicits.datetimeReads
   implicit val reader: Reads[WebHook] = (
     (__ \ "id").read[Long] and
       (__ \ "name").read[String] and

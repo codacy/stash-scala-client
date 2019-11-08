@@ -2,7 +2,7 @@ package com.codacy.client.stash.util
 
 import java.net.URI
 
-import play.api.data.validation.ValidationError
+import com.codacy.client.stash.JsResultHelper
 import play.api.libs.json.{Json, Reads, Writes}
 
 import scala.language.implicitConversions
@@ -16,7 +16,7 @@ object Implicits {
       .map { value =>
         e.values.find(_.toString == value)
       }
-      .collect(ValidationError(s"Invalid enumeration value")) { case Some(v) => v }
+      .collect(JsResultHelper.error(s"Invalid enumeration value")) { case Some(v) => v }
   }
 
   implicit class URIQueryParam(uri: URI) {
