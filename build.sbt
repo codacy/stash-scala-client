@@ -35,3 +35,8 @@ val stashScalaClient = project
       case _ => throw new Exception("Unsupported Play JSON version")
     }
   })
+  .settings(name := (Dependencies.playJson(scalaVersion.value).head.revision match {
+    case Dependencies.playJson25 => s"${name.value}_playjson25"
+    case Dependencies.playJson27 => s"${name.value}_playjson27"
+    case _ => throw new Exception("Unsupported Play JSON version")
+  }))
