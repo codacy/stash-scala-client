@@ -30,8 +30,8 @@ val stashScalaClient = project
   )
   .settings(unmanagedSourceDirectories.in(Compile) += {
     Dependencies.playJson(scalaVersion.value).head.revision match {
-      case "2.5.19" => baseDirectory.in(Compile).value / "src" / "main" / s"play_json_2.5"
-      case "2.7.4" => baseDirectory.in(Compile).value / "src" / "main" / s"play_json_2.7"
+      case Dependencies.playJson25 => baseDirectory.in(Compile).value / "src" / "main" / s"play_json_2.5"
+      case Dependencies.playJson27 => baseDirectory.in(Compile).value / "src" / "main" / s"play_json_2.7"
       case _ => throw new Exception("Unsupported Play JSON version")
     }
   })
