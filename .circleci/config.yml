@@ -63,6 +63,7 @@ workflows:
           cmd: |
             sbt ";retrieveGPGKeys"
             sbt ";++2.11.12;publishSigned;sonatypeRelease"
+            sbt -DplayVersion="2.7.4" ";++2.11.12;publishSigned;sonatypeRelease"
             sbt ";++2.12.10;publishSigned;sonatypeRelease"
           requires:
             - tag_version
