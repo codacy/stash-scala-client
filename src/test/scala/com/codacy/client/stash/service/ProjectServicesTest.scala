@@ -12,6 +12,7 @@ import org.scalatestplus.mockito.MockitoSugar
 class ProjectServicesTest extends WordSpec with Matchers with MockitoSugar {
 
   val testEndpoint = "http://localhost:7990"
+  val accessToken = "MTkwNDk0MDkyOTY2OlNLTfWTvoxiTiRw8ijsifYmskhi"
 
   val testAccessToken = ""
 
