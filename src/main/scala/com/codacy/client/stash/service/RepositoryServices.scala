@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{Repository, SshKeySimple, User}
+import com.codacy.client.stash.{Permission, Repository, SshKeySimple, User}
 import play.api.libs.json.Json
 
 class RepositoryServices(client: StashClient) {
@@ -30,8 +30,23 @@ class RepositoryServices(client: StashClient) {
     *
     * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
     */
-  def getRepositoryMembers(projectKey: String, repositorySlug: String): RequestResponse[Seq[User]] = {
+  def getRepositoryUsers(projectKey: String, repositorySlug: String): RequestResponse[Seq[User]] = {
     client.executePaginated(Request(s"$BASE/$projectKey/repos/$repositorySlug", classOf[Seq[User]]))
+  }
+
+  /**
+    * Retrieve a page of users that have been granted at least one permission for the specified repository.
+    *
+    * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
+    */
+  def getRepositoryUserPermissions(
+      projectKey: String,
+      repositorySlug: String,
+      user: String
+  ): RequestResponse[Seq[Permission]] = {
+    client.executePaginated(
+      Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user", classOf[Seq[Permission]])
+    )
   }
 
   /**

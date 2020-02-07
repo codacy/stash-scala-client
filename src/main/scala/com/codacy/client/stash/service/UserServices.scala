@@ -33,8 +33,8 @@ class UserServices(client: StashClient) {
   }
 
   /**
-   * Gets the basic information associated with an account, including their avatarUrls.
-   */
+    * Gets the basic information associated with an account, including their avatarUrls.
+    */
   def getUserWithAvatar(username: String, size: Option[Int]): RequestResponse[User] = {
     client.execute(Request(s"/rest/api/1.0/users/$username?avatarSize=${size.getOrElse(64)}", classOf[User]))
   }
