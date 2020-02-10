@@ -32,13 +32,27 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
         } yield {
           val cleanUrl = request.url.takeWhile(_ != '?')
           val nextUrl = s"$cleanUrl?start=$nextPageStart"
-          executePaginated(Request(nextUrl, request.classType)).value
-            .getOrElse(Seq.empty)
+          executePaginated(Request(nextUrl, request.classType)).value.getOrElse(Seq.empty)
         }).getOrElse(Seq.empty)
 
         RequestResponse(Some((json \ "values").as[Seq[T]] ++ nextRepos))
 
       case Left(resp) => resp
+    }
+  }
+
+  def executePaginated[T](request: Request[Seq[T]], start: Int, limit: Int)(
+      implicit reader: Reads[T]
+  ): RequestResponse[Seq[T]] = {
+
+    val cleanUrl = request.url.takeWhile(_ != '?')
+    val nextUrl = s"$cleanUrl?start=$start&limit=$limit"
+
+    println("URL: " + nextUrl)
+
+    get[Seq[T]](nextUrl) match {
+      case Right(json) => RequestResponse(Some((json \ "values").as[Seq[T]]))
+      case Left(error) => error
     }
   }
 

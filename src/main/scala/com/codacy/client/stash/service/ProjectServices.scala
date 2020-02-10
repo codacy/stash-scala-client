@@ -10,15 +10,17 @@ class ProjectServices(client: StashClient) {
   /**
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
-  def findAll: RequestResponse[Seq[Project]] = {
-    client.executePaginated(Request(BASE, classOf[Seq[Project]]))
+  def findById(projectKey: String): RequestResponse[Project] = {
+    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))
   }
 
   /**
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
-  def findById(projectKey: String): RequestResponse[Project] = {
-    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))
+  def findAll(pageRequest: Option[PageRequest]): RequestResponse[Seq[Project]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(Request(BASE, classOf[Seq[Project]]), pageRequest.start, pageRequest.limit)
+    case None => client.executePaginated(Request(BASE, classOf[Seq[Project]]))
   }
 
   /**
@@ -26,8 +28,21 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findUserPermissions(projectKey: String, user: String): RequestResponse[Seq[UserPermission]] = {
-    client.executePaginated(Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]))
+  def findUserPermissions(
+      projectKey: String,
+      user: String,
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]),
+        pageRequest.start,
+        pageRequest.limit
+      )
+    case None =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]])
+      )
   }
 
   /**
@@ -35,17 +50,33 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have REPO_READ permission for the specified project to call this resource.
     */
-  def findAllRepositories(projectKey: String): RequestResponse[Seq[Repository]] = {
-    client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
-  }
+  def findAllRepositories(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Repository]] =
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginated(
+          Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
+          pageRequest.start,
+          pageRequest.limit
+        )
+      case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
+    }
 
   /**
     * Retrieve a page of users that have been granted at least one permission for the specified project.
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findAllUsersWithPermissions(projectKey: String): RequestResponse[Seq[UserPermission]] = {
-    client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))
+  def findAllUsersWithPermissions(
+      projectKey: String,
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]),
+        pageRequest.start,
+        pageRequest.limit
+      )
+    case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))
   }
 
   /**
@@ -53,11 +84,27 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findAllUsersWithPermissionsAndAvatars(projectKey: String, size: Option[Int]): RequestResponse[Seq[UserPermission]] = {
-    client.executePaginated(Request(
-      s"$BASE/$projectKey/permissions/users?avatarSize=${size.getOrElse(0)}",
-      classOf[Seq[UserPermission]]
-    ))
+  def findAllUsersWithPermissionsAndAvatars(
+      projectKey: String,
+      avatarSize: Option[Int],
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(
+        Request(
+          s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
+          classOf[Seq[UserPermission]]
+        ),
+        pageRequest.start,
+        pageRequest.limit
+      )
+    case None =>
+      client.executePaginated(
+        Request(
+          s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
+          classOf[Seq[UserPermission]]
+        )
+      )
   }
 
   /**
@@ -65,9 +112,16 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findAllGroups(projectKey: String): RequestResponse[Seq[Group]] = {
-    client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))
-  }
+  def findAllGroups(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Group]] =
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginated(
+          Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]),
+          pageRequest.start,
+          pageRequest.limit
+        )
+      case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))
+    }
 
   /**
     * Retrieve the avatar for the project matching the supplied projectKey.
