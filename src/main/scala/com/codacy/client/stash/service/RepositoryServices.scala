@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{Repository, SshKeySimple, UserPermission}
+import com.codacy.client.stash.{PageRequest, Repository, SshKeySimple, UserPermission}
 import play.api.libs.json.Json
 
 class RepositoryServices(client: StashClient) {
@@ -12,9 +12,16 @@ class RepositoryServices(client: StashClient) {
     * Gets the list of the user's repositories. Private repositories only appear on this list
     * if the caller is authenticated and is authorized to view the repository.
     */
-  def getRepositories(projectKey: String): RequestResponse[Seq[Repository]] = {
-    client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
-  }
+  def getRepositories(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Repository]] =
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginated(
+          Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
+          pageRequest.start,
+          pageRequest.limit
+        )
+      case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
+    }
 
   /**
     * Retrieve the repository matching the supplied projectKey and repositorySlug.
@@ -30,10 +37,21 @@ class RepositoryServices(client: StashClient) {
     *
     * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
     */
-  def getRepositoryUsers(projectKey: String, repositorySlug: String): RequestResponse[Seq[UserPermission]] = {
-    client.executePaginated(
-      Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]])
-    )
+  def getRepositoryUsers(
+      projectKey: String,
+      repositorySlug: String,
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]]),
+        pageRequest.start,
+        pageRequest.limit
+      )
+    case None =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]])
+      )
   }
 
   /**
@@ -44,11 +62,22 @@ class RepositoryServices(client: StashClient) {
   def getRepositoryUserPermissions(
       projectKey: String,
       repositorySlug: String,
-      user: String
-  ): RequestResponse[Seq[UserPermission]] = {
-    client.executePaginated(
-      Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user", classOf[Seq[UserPermission]])
-    )
+      user: String,
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(
+        Request(
+          s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
+          classOf[Seq[UserPermission]]
+        ),
+        pageRequest.start,
+        pageRequest.limit
+      )
+    case None =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user", classOf[Seq[UserPermission]])
+      )
   }
 
   /**
@@ -61,7 +90,6 @@ class RepositoryServices(client: StashClient) {
       permission: String = "REPO_READ"
   ): RequestResponse[SshKeySimple] = {
     val url = s"$BASE/$projectKey/repos/$repo/ssh"
-
     val values = Json.obj("key" -> Json.obj("text" -> key), "permission" -> permission)
 
     client.postJson(Request(url, classOf[SshKeySimple]), values)
