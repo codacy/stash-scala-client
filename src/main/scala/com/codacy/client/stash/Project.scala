@@ -3,7 +3,7 @@ package com.codacy.client.stash
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-final case class Project(key: String, id: Long, name: String, public: Boolean, avatarUrl: String, links: Seq[String])
+final case class Project(key: String, id: Long, name: String, public: Boolean, avatarUrl: Option[String], links: Seq[String])
 
 object Project {
   implicit val reader: Reads[Project] = {
@@ -11,7 +11,7 @@ object Project {
       (__ \ "id").read[Long] and
       (__ \ "name").read[String] and
       (__ \ "public").read[Boolean] and
-      (__ \ "avatarUrl").read[String] and
+      (__ \ "avatarUrl").readNullable[String] and
       (__ \ "links" \ "self").read[Seq[JsValue]].map(parseLinks))(Project.apply _)
   }
 

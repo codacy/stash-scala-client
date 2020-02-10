@@ -3,7 +3,7 @@ package com.codacy.client.stash
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-final case class User(username: String, email: Option[String], displayName: String, authorId: Long, avatarUrl: String)
+final case class User(username: String, email: Option[String], displayName: String, authorId: Long, avatarUrl: Option[String])
 
 object User {
   implicit val reader: Reads[User] = (
@@ -11,6 +11,6 @@ object User {
       (__ \ "emailAddress").readNullable[String] and
       (__ \ "displayName").read[String] and
       (__ \ "id").read[Long] and
-      (__ \ "avatarUrl").read[String]
+      (__ \ "avatarUrl").readNullable[String]
   )(User.apply _)
 }

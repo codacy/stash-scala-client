@@ -29,7 +29,7 @@ class UserServices(client: StashClient) {
     * Gets the basic information associated with an account.
     */
   def getUser(username: String): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username?avatarSize=64", classOf[User]))
+    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))
   }
 
   /**
