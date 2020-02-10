@@ -1,6 +1,6 @@
 package com.codacy.client.stash.service
 
-import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
+import com.codacy.client.stash.client.{PageRequest, Request, RequestResponse, StashClient}
 import com.codacy.client.stash._
 
 class ProjectServices(client: StashClient) {
@@ -19,7 +19,7 @@ class ProjectServices(client: StashClient) {
     */
   def findAll(pageRequest: Option[PageRequest]): RequestResponse[Seq[Project]] = pageRequest match {
     case Some(pageRequest) =>
-      client.executePaginated(Request(BASE, classOf[Seq[Project]]), pageRequest.start, pageRequest.limit)
+      client.executePaginated(Request(BASE, classOf[Seq[Project]]), pageRequest)
     case None => client.executePaginated(Request(BASE, classOf[Seq[Project]]))
   }
 
@@ -35,9 +35,7 @@ class ProjectServices(client: StashClient) {
   ): RequestResponse[Seq[UserPermission]] = pageRequest match {
     case Some(pageRequest) =>
       client.executePaginated(
-        Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]),
-        pageRequest.start,
-        pageRequest.limit
+        Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]), pageRequest
       )
     case None =>
       client.executePaginated(
@@ -53,11 +51,7 @@ class ProjectServices(client: StashClient) {
   def findAllRepositories(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Repository]] =
     pageRequest match {
       case Some(pageRequest) =>
-        client.executePaginated(
-          Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
-          pageRequest.start,
-          pageRequest.limit
-        )
+        client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]), pageRequest)
       case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
     }
 
@@ -73,8 +67,7 @@ class ProjectServices(client: StashClient) {
     case Some(pageRequest) =>
       client.executePaginated(
         Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]),
-        pageRequest.start,
-        pageRequest.limit
+        pageRequest
       )
     case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))
   }
@@ -90,14 +83,7 @@ class ProjectServices(client: StashClient) {
       pageRequest: Option[PageRequest]
   ): RequestResponse[Seq[UserPermission]] = pageRequest match {
     case Some(pageRequest) =>
-      client.executePaginated(
-        Request(
-          s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
-          classOf[Seq[UserPermission]]
-        ),
-        pageRequest.start,
-        pageRequest.limit
-      )
+      client.executePaginated(Request(s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}", classOf[Seq[UserPermission]]), pageRequest)
     case None =>
       client.executePaginated(
         Request(
@@ -117,8 +103,7 @@ class ProjectServices(client: StashClient) {
       case Some(pageRequest) =>
         client.executePaginated(
           Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]),
-          pageRequest.start,
-          pageRequest.limit
+          pageRequest
         )
       case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))
     }

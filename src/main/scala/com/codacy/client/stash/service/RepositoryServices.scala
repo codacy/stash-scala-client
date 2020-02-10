@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
-import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{PageRequest, Repository, SshKeySimple, UserPermission}
+import com.codacy.client.stash.client.{PageRequest, Request, RequestResponse, StashClient}
+import com.codacy.client.stash.{Repository, SshKeySimple, UserPermission}
 import play.api.libs.json.Json
 
 class RepositoryServices(client: StashClient) {
@@ -17,8 +17,7 @@ class RepositoryServices(client: StashClient) {
       case Some(pageRequest) =>
         client.executePaginated(
           Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
-          pageRequest.start,
-          pageRequest.limit
+          pageRequest
         )
       case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
     }
@@ -45,8 +44,7 @@ class RepositoryServices(client: StashClient) {
     case Some(pageRequest) =>
       client.executePaginated(
         Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]]),
-        pageRequest.start,
-        pageRequest.limit
+        pageRequest
       )
     case None =>
       client.executePaginated(
@@ -71,8 +69,7 @@ class RepositoryServices(client: StashClient) {
           s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
           classOf[Seq[UserPermission]]
         ),
-        pageRequest.start,
-        pageRequest.limit
+        pageRequest
       )
     case None =>
       client.executePaginated(
