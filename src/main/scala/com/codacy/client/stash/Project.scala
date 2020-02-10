@@ -3,7 +3,14 @@ package com.codacy.client.stash
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-final case class Project(key: String, id: Long, name: String, public: Boolean, avatarUrl: Option[String], links: Seq[String])
+final case class Project(
+    key: String,
+    id: Long,
+    name: String,
+    public: Boolean,
+    avatarUrl: Option[String],
+    links: Seq[String]
+)
 
 object Project {
   implicit val reader: Reads[Project] = {

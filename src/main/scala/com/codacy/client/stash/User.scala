@@ -3,7 +3,13 @@ package com.codacy.client.stash
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-final case class User(username: String, email: Option[String], displayName: String, authorId: Long, avatarUrl: Option[String])
+final case class User(
+    username: String,
+    email: Option[String],
+    displayName: String,
+    authorId: Long,
+    avatarUrl: Option[String]
+)
 
 object User {
   implicit val reader: Reads[User] = (

@@ -11,14 +11,14 @@ class ProjectServices(client: StashClient) {
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findAll: RequestResponse[Seq[Project]] = {
-    client executePaginated Request(BASE, classOf[Seq[Project]])
+    client.executePaginated(Request(BASE, classOf[Seq[Project]]))
   }
 
   /**
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findById(projectKey: String): RequestResponse[Project] = {
-    client execute Request(s"$BASE/$projectKey", classOf[Project])
+    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))
   }
 
   /**
@@ -26,8 +26,8 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findUserPermissions(projectKey: String, user: String): RequestResponse[Seq[Permission]] = {
-    client.executePaginated(Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[Permission]]))
+  def findUserPermissions(projectKey: String, user: String): RequestResponse[Seq[UserPermission]] = {
+    client.executePaginated(Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]))
   }
 
   /**
@@ -36,7 +36,7 @@ class ProjectServices(client: StashClient) {
     * The authenticated user must have REPO_READ permission for the specified project to call this resource.
     */
   def findAllRepositories(projectKey: String): RequestResponse[Seq[Repository]] = {
-    client executePaginated Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]])
+    client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
   }
 
   /**
@@ -44,8 +44,8 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findAllUsers(projectKey: String): RequestResponse[Seq[User]] = {
-    client executePaginated Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[User]])
+  def findAllUsersWithPermissions(projectKey: String): RequestResponse[Seq[UserPermission]] = {
+    client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))
   }
 
   /**
@@ -53,11 +53,11 @@ class ProjectServices(client: StashClient) {
     *
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
-  def findAllUsersWithAvatars(projectKey: String, size: Option[Int]): RequestResponse[Seq[User]] = {
-    client executePaginated Request(
-      s"$BASE/$projectKey/permissions/users/avatar?${size.getOrElse(0)}",
-      classOf[Seq[User]]
-    )
+  def findAllUsersWithPermissionsAndAvatars(projectKey: String, size: Option[Int]): RequestResponse[Seq[UserPermission]] = {
+    client.executePaginated(Request(
+      s"$BASE/$projectKey/permissions/users?avatarSize=${size.getOrElse(0)}",
+      classOf[Seq[UserPermission]]
+    ))
   }
 
   /**
@@ -66,7 +66,7 @@ class ProjectServices(client: StashClient) {
     * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
     */
   def findAllGroups(projectKey: String): RequestResponse[Seq[Group]] = {
-    client executePaginated Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]])
+    client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))
   }
 
   /**
@@ -75,7 +75,7 @@ class ProjectServices(client: StashClient) {
     * The authenticated user must have PROJECT_VIEW permission for the specified project to call this resource.
     */
   def findAvatar(projectKey: String, size: Option[Int]): RequestResponse[String] = {
-    client execute Request(s"$BASE/$projectKey/avatar?${size.getOrElse(0)}", classOf[String])
+    client.execute(Request(s"$BASE/$projectKey/avatar?${size.getOrElse(0)}", classOf[String]))
   }
 
 }
