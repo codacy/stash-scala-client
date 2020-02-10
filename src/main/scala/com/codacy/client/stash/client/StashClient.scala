@@ -44,11 +44,8 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   def executePaginated[T](request: Request[Seq[T]], start: Int, limit: Int)(
       implicit reader: Reads[T]
   ): RequestResponse[Seq[T]] = {
-
     val cleanUrl = request.url.takeWhile(_ != '?')
     val nextUrl = s"$cleanUrl?start=$start&limit=$limit"
-
-    println("URL: " + nextUrl)
 
     get[Seq[T]](nextUrl) match {
       case Right(json) => RequestResponse(Some((json \ "values").as[Seq[T]]))
