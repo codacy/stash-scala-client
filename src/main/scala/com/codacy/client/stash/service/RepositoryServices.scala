@@ -15,10 +15,7 @@ class RepositoryServices(client: StashClient) {
   def getRepositories(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Repository]] =
     pageRequest match {
       case Some(pageRequest) =>
-        client.executePaginated(
-          Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
-          pageRequest
-        )
+        client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]), pageRequest)
       case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
     }
 
