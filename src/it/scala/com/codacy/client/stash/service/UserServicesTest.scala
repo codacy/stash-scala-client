@@ -23,6 +23,10 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar with Aut
       }
     }
 
+    /**
+     * This test depends on the correct environment variables being set:
+     * "BB_SERVER_CONSUMER_KEY", "BB_SERVER_CONSUMER_SECRET", "BB_SERVER_AUTH_TOKEN", "BB_SERVER_AUTH_SECRET"
+     */
     "(using oauth1 tokens) create a status with no errors returned" in withClient(oauth1) { client =>
       val service = new UserServices(client)
 
@@ -35,5 +39,4 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar with Aut
       }
     }
   }
-
 }
