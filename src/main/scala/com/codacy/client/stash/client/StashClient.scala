@@ -14,7 +14,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
    * Does an API request and parses the json output into a class
    */
   def execute[T](request: Request[T])(implicit reader: Reads[T]): RequestResponse[T] = {
-    get[T](request.url) match {
+    get[T](request.path) match {
       case Right(json) => RequestResponse(json.asOpt[T])
       case Left(error) => error
     }
@@ -23,16 +23,18 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   /*
    * Does an paginated API request and parses the json output into a sequence of classes
    */
-  def executePaginated[T](request: Request[Seq[T]])(implicit reader: Reads[T]): RequestResponse[Seq[T]] = {
-    get[Seq[T]](request.url) match {
+  def executePaginated[T](request: Request[Seq[T]], params: Map[String, String] = Map.empty)(
+      implicit reader: Reads[T]
+  ): RequestResponse[Seq[T]] = {
+    val cleanUrl = request.path.takeWhile(_ != '?')
+    get[Seq[T]](cleanUrl, params) match {
       case Right(json) =>
         val nextRepos = (for {
           isLastPage <- (json \ "isLastPage").asOpt[Boolean] if !isLastPage
           nextPageStart <- (json \ "nextPageStart").asOpt[Int]
         } yield {
-          val cleanUrl = request.url.takeWhile(_ != '?')
-          val nextUrl = s"$cleanUrl?start=$nextPageStart"
-          executePaginated(Request(nextUrl, request.classType)).value.getOrElse(Seq.empty)
+          executePaginated(Request(cleanUrl, request.classType), params + ("start" -> nextPageStart.toString)).value
+            .getOrElse(Seq.empty)
         }).getOrElse(Seq.empty)
 
         RequestResponse(Some((json \ "values").as[Seq[T]] ++ nextRepos))
@@ -44,12 +46,12 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   def executePaginated[T](request: Request[Seq[T]], pageRequest: PageRequest)(
       implicit reader: Reads[T]
   ): RequestResponse[Seq[T]] = {
-    val cleanUrl = request.url.takeWhile(_ != '?')
-    val nextUrl = s"$cleanUrl?start=${pageRequest.getStart}&limit=${pageRequest.getLimit}"
+    val cleanUrl = request.path.takeWhile(_ != '?')
 
-    get[Seq[T]](nextUrl) match {
+    get[Seq[T]](cleanUrl, Map("start" -> pageRequest.getStart.toString, "limit" -> pageRequest.getLimit.toString)) match {
       case Right(json) => RequestResponse(Some((json \ "values").as[Seq[T]]))
-      case Left(error) => error
+      case Left(error) =>
+        error
     }
   }
 
@@ -74,7 +76,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   private def performRequest[T](method: String, request: Request[T], values: JsValue)(
       implicit reader: Reads[T]
   ): RequestResponse[T] = {
-    doRequest[T](request.url, method, Option(values)) match {
+    doRequest[T](request.path, method, Map.empty, Option(values)) match {
       case Right((HTTPStatusCodes.OK | HTTPStatusCodes.CREATED, body)) =>
         parseJson[T](body).fold(identity, { jsValue =>
           valueOrError[T](jsValue)
@@ -92,7 +94,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   }
 
   def delete(requestUrl: String): RequestResponse[Boolean] = {
-    doRequest[Boolean](requestUrl, "DELETE", None) match {
+    doRequest[Boolean](requestUrl, "DELETE", Map.empty, None) match {
       case Right((HTTPStatusCodes.NO_CONTENT, _)) =>
         RequestResponse[Boolean](Option(true))
 
@@ -111,8 +113,11 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
     }
   }
 
-  private def get[T](requestUrl: String): Either[RequestResponse[T], JsValue] = {
-    doRequest[T](requestUrl, "GET", None) match {
+  private def get[T](
+      requestUrl: String,
+      params: Map[String, String] = Map.empty
+  ): Either[RequestResponse[T], JsValue] = {
+    doRequest[T](requestUrl, "GET", params, None) match {
       case Right((HTTPStatusCodes.OK | HTTPStatusCodes.CREATED, body)) =>
         parseJson[T](body)
       case Right((statusCode, body)) =>
@@ -125,11 +130,13 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   def doRequest[T](
       requestPath: String,
       method: String,
+      params: Map[String, String] = Map.empty,
       payload: Option[JsValue] = None
   ): Either[RequestResponse[T], (Int, String)] = {
     val url = generateUrl(requestPath)
     try {
-      val baseRequest = Http(url).method(method)
+      val baseRequest = Http(url).method(method).params(params)
+
       val request = payload
         .fold(baseRequest)(
           p =>
