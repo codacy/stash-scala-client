@@ -19,6 +19,7 @@ package com.codacy.client.stash.client.auth
 import java.net.{URI, URL}
 import java.security._
 import java.security.spec.PKCS8EncodedKeySpec
+import java.util.UUID
 
 import scalaj.http._
 
@@ -29,7 +30,7 @@ object OAuth1 {
     req.option(conn => {
       val baseParams: Seq[(String, String)] = Seq(
         ("oauth_timestamp", (System.currentTimeMillis / 1000).toString),
-        ("oauth_nonce", System.currentTimeMillis.toString)
+        ("oauth_nonce", UUID.randomUUID().toString)
       )
 
       var (oauthParams, signature) = getSig(baseParams, req, consumer, token, verifier)
