@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{PageRequest, Request, RequestResponse, StashClient}
-import com.codacy.client.stash.{Repository, SshKeySimple, UserPermission}
+import com.codacy.client.stash.{Group, Repository, SshKeySimple, UserPermission}
 import play.api.libs.json.Json
 
 class RepositoryServices(client: StashClient) {
@@ -73,6 +73,26 @@ class RepositoryServices(client: StashClient) {
         Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user", classOf[Seq[UserPermission]])
       )
   }
+
+  def getRepositoryGroups(
+                           projectKey: String,
+                           repositorySlug: String,
+                           pageRequest: Option[PageRequest]
+                         ): RequestResponse[Seq[Group]] = pageRequest match {
+    case Some(pageRequest) =>
+      client.executePaginated(
+        Request(
+          s"$BASE/$projectKey/repos/$repositorySlug/permissions/groups",
+          classOf[Seq[Group]]
+        ),
+        pageRequest
+      )
+    case None =>
+      client.executePaginated(
+        Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/groups", classOf[Seq[Group]])
+      )
+  }
+
 
   /**
     * Creates a ssh key
