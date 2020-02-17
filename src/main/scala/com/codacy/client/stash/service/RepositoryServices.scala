@@ -75,16 +75,13 @@ class RepositoryServices(client: StashClient) {
   }
 
   def getRepositoryGroups(
-                           projectKey: String,
-                           repositorySlug: String,
-                           pageRequest: Option[PageRequest]
-                         ): RequestResponse[Seq[Group]] = pageRequest match {
+      projectKey: String,
+      repositorySlug: String,
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[Group]] = pageRequest match {
     case Some(pageRequest) =>
       client.executePaginated(
-        Request(
-          s"$BASE/$projectKey/repos/$repositorySlug/permissions/groups",
-          classOf[Seq[Group]]
-        ),
+        Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/groups", classOf[Seq[Group]]),
         pageRequest
       )
     case None =>
@@ -92,7 +89,6 @@ class RepositoryServices(client: StashClient) {
         Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/groups", classOf[Seq[Group]])
       )
   }
-
 
   /**
     * Creates a ssh key

@@ -8,21 +8,18 @@ class AdminServices(client: StashClient) {
   val BASE: String = "/rest/api/1.0/admin"
 
   /**
-   * Retrieves a list of users that are members of a specified group.
-   *
-   * The authenticated user must have the LICENSED_USER permission to call this resource.
-   */
+    * Retrieves a list of users that are members of a specified group.
+    *
+    * The authenticated user must have the LICENSED_USER permission to call this resource.
+    */
   def findUsersInGroup(
-                        context: String,
-                        filter: Option[String],
-                        pageRequest: Option[PageRequest]
-                      ): RequestResponse[Seq[User]] = pageRequest match {
+      context: String,
+      filter: Option[String],
+      pageRequest: Option[PageRequest]
+  ): RequestResponse[Seq[User]] = pageRequest match {
     case Some(pageRequest) =>
       client.executePaginated(
-        Request(
-          s"$BASE/groups/more-members?context=$context&filter=${filter.getOrElse("")}",
-          classOf[Seq[User]]
-        ),
+        Request(s"$BASE/groups/more-members?context=$context&filter=${filter.getOrElse("")}", classOf[Seq[User]]),
         pageRequest
       )
     case None =>
