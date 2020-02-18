@@ -23,9 +23,9 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   /*
    * Does an paginated API request and parses the json output into a sequence of classes
    */
-  def executePaginated[T](request: Request[Seq[T]], params: Map[String, String] = Map.empty)(
-      implicit reader: Reads[T]
-  ): RequestResponse[Seq[T]] = {
+  def executePaginated[T](
+      request: Request[Seq[T]]
+  )(params: Map[String, String] = Map.empty)(implicit reader: Reads[T]): RequestResponse[Seq[T]] = {
     val cleanUrl = request.path.takeWhile(_ != '?')
     get[Seq[T]](cleanUrl, params) match {
       case Right(json) =>
@@ -33,7 +33,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
           isLastPage <- (json \ "isLastPage").asOpt[Boolean] if !isLastPage
           nextPageStart <- (json \ "nextPageStart").asOpt[Int]
         } yield {
-          executePaginated(Request(cleanUrl, request.classType), params + ("start" -> nextPageStart.toString)).value
+          executePaginated(Request(cleanUrl, request.classType))(params + ("start" -> nextPageStart.toString)).value
             .getOrElse(Seq.empty)
         }).getOrElse(Seq.empty)
 
@@ -43,12 +43,15 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
     }
   }
 
-  def executePaginated[T](request: Request[Seq[T]], pageRequest: PageRequest)(
-      implicit reader: Reads[T]
-  ): RequestResponse[Seq[T]] = {
+  def executePaginatedWithPageRequest[T](request: Request[Seq[T]], pageRequest: PageRequest)(
+      params: Map[String, String] = Map.empty
+  )(implicit reader: Reads[T]): RequestResponse[Seq[T]] = {
     val cleanUrl = request.path.takeWhile(_ != '?')
 
-    get[Seq[T]](cleanUrl, Map("start" -> pageRequest.getStart.toString, "limit" -> pageRequest.getLimit.toString)) match {
+    get[Seq[T]](
+      cleanUrl,
+      params ++ Map("start" -> pageRequest.getStart.toString, "limit" -> pageRequest.getLimit.toString)
+    ) match {
       case Right(json) => RequestResponse(Some((json \ "values").as[Seq[T]]))
       case Left(error) =>
         error

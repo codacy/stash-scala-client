@@ -19,8 +19,8 @@ class ProjectServices(client: StashClient) {
     */
   def findAll(pageRequest: Option[PageRequest]): RequestResponse[Seq[Project]] = pageRequest match {
     case Some(pageRequest) =>
-      client.executePaginated(Request(BASE, classOf[Seq[Project]]), pageRequest)
-    case None => client.executePaginated(Request(BASE, classOf[Seq[Project]]))
+      client.executePaginatedWithPageRequest(Request(BASE, classOf[Seq[Project]]), pageRequest = pageRequest)()
+    case None => client.executePaginated(Request(BASE, classOf[Seq[Project]]))()
   }
 
   /**
@@ -34,14 +34,14 @@ class ProjectServices(client: StashClient) {
       pageRequest: Option[PageRequest]
   ): RequestResponse[Seq[UserPermission]] = pageRequest match {
     case Some(pageRequest) =>
-      client.executePaginated(
+      client.executePaginatedWithPageRequest(
         Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]),
-        pageRequest
-      )
+        pageRequest = pageRequest
+      )()
     case None =>
       client.executePaginated(
         Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]])
-      )
+      )()
   }
 
   /**
@@ -52,8 +52,12 @@ class ProjectServices(client: StashClient) {
   def findAllRepositories(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Repository]] =
     pageRequest match {
       case Some(pageRequest) =>
-        client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]), pageRequest)
-      case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
+        client
+          .executePaginatedWithPageRequest(
+            Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
+            pageRequest = pageRequest
+          )()
+      case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))()
     }
 
   /**
@@ -67,8 +71,12 @@ class ProjectServices(client: StashClient) {
   ): RequestResponse[Seq[UserPermission]] = pageRequest match {
     case Some(pageRequest) =>
       client
-        .executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]), pageRequest)
-    case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))
+        .executePaginatedWithPageRequest(
+          Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]),
+          pageRequest = pageRequest
+        )()
+    case None =>
+      client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))()
   }
 
   /**
@@ -82,20 +90,20 @@ class ProjectServices(client: StashClient) {
       pageRequest: Option[PageRequest]
   ): RequestResponse[Seq[UserPermission]] = pageRequest match {
     case Some(pageRequest) =>
-      client.executePaginated(
+      client.executePaginatedWithPageRequest(
         Request(
           s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
           classOf[Seq[UserPermission]]
         ),
         pageRequest
-      )
+      )()
     case None =>
       client.executePaginated(
         Request(
           s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
           classOf[Seq[UserPermission]]
         )
-      )
+      )()
   }
 
   /**
@@ -106,8 +114,11 @@ class ProjectServices(client: StashClient) {
   def findAllGroups(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Group]] =
     pageRequest match {
       case Some(pageRequest) =>
-        client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]), pageRequest)
-      case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))
+        client.executePaginatedWithPageRequest(
+          Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]),
+          pageRequest = pageRequest
+        )()
+      case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))()
     }
 
   /**

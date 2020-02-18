@@ -15,8 +15,11 @@ class RepositoryServices(client: StashClient) {
   def getRepositories(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Repository]] =
     pageRequest match {
       case Some(pageRequest) =>
-        client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]), pageRequest)
-      case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))
+        client.executePaginatedWithPageRequest(
+          Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]),
+          pageRequest = pageRequest
+        )()
+      case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))()
     }
 
   /**
@@ -39,14 +42,14 @@ class RepositoryServices(client: StashClient) {
       pageRequest: Option[PageRequest]
   ): RequestResponse[Seq[UserPermission]] = pageRequest match {
     case Some(pageRequest) =>
-      client.executePaginated(
+      client.executePaginatedWithPageRequest(
         Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]]),
-        pageRequest
-      )
+        pageRequest = pageRequest
+      )()
     case None =>
       client.executePaginated(
         Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]])
-      )
+      )()
   }
 
   /**
@@ -59,19 +62,25 @@ class RepositoryServices(client: StashClient) {
       repositorySlug: String,
       user: String,
       pageRequest: Option[PageRequest]
-  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
-    case Some(pageRequest) =>
-      client.executePaginated(
-        Request(
-          s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
-          classOf[Seq[UserPermission]]
-        ),
-        pageRequest
-      )
-    case None =>
-      client.executePaginated(
-        Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user", classOf[Seq[UserPermission]])
-      )
+  ): RequestResponse[Seq[UserPermission]] = {
+    val filterParam = Map("filter" -> user)
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(
+          Request(
+            s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
+            classOf[Seq[UserPermission]]
+          ),
+          pageRequest = pageRequest
+        )(params = filterParam)
+      case None =>
+        client.executePaginated(
+          Request(
+            s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
+            classOf[Seq[UserPermission]]
+          )
+        )(params = filterParam)
+    }
   }
 
   /**
