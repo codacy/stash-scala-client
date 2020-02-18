@@ -202,7 +202,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   }
 
   private def generateUrl(endpoint: String) = {
-    s"$apiUrl${endpoint.replace(" ", "-")}"
+    s"$apiUrl$endpoint"
   }
 
 }

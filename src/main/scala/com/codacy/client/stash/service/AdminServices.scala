@@ -16,15 +16,20 @@ class AdminServices(client: StashClient) {
       context: String,
       filter: Option[String],
       pageRequest: Option[PageRequest]
-  ): RequestResponse[Seq[User]] = pageRequest match {
-    case Some(pageRequest) =>
-      client.executePaginated(
-        Request(s"$BASE/groups/more-members?context=$context&filter=${filter.getOrElse("")}", classOf[Seq[User]]),
-        pageRequest
-      )
-    case None =>
-      client.executePaginated(
-        Request(s"$BASE/groups/more-members?context=$context&filter=${filter.getOrElse("")}", classOf[Seq[User]])
-      )
+  ): RequestResponse[Seq[User]] = {
+    val parameters = Map("context" -> context, "filter" -> filter.getOrElse(""))
+    val filterField = filter.map(value => s"filter=$value").getOrElse("")
+
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(
+          Request(s"$BASE/groups/more-members?context=$context&$filterField", classOf[Seq[User]]),
+          pageRequest = pageRequest
+        )(params = parameters)
+      case None =>
+        client.executePaginated(
+          Request(s"$BASE/groups/more-members?context=$context&$filterField", classOf[Seq[User]])
+        )(params = parameters)
+    }
   }
 }
