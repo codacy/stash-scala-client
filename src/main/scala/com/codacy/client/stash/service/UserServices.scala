@@ -11,7 +11,7 @@ class UserServices(client: StashClient) {
     */
   def getUsername: RequestResponse[String] = {
     client
-      .doRequest[String]("/plugins/servlet/applinks/whoami", "GET", None)
+      .doRequest[String]("/plugins/servlet/applinks/whoami", "GET", payload = None)
       .fold(identity, {
         case (200, body) => RequestResponse(Option(body))
         case _ => RequestResponse(Option.empty, "", hasError = true)

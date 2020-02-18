@@ -59,8 +59,12 @@ class BuildStatusServicesTest extends WordSpec with Matchers with MockitoSugar {
       val expectedRequest = Request[Seq[TimestampedBuildStatus]](expectedUrl, classOf[Seq[TimestampedBuildStatus]])
       val expectedRequestMatch = ArgumentMatchers.eq(expectedRequest)
       val mockResponse = RequestResponse(Some(Seq(clientResponseItem)))
-      when(client.executePaginated[TimestampedBuildStatus](expectedRequestMatch)(ArgumentMatchers.any()))
-        .thenReturn(mockResponse)
+      when(
+        client
+          .executePaginated[TimestampedBuildStatus](request = expectedRequestMatch)(
+            params = ArgumentMatchers.eq(Map.empty[String, String])
+          )(ArgumentMatchers.any())
+      ).thenReturn(mockResponse)
 
       // WHEN
       val services = new BuildStatusServices(client)

@@ -21,10 +21,15 @@ class PullRequestServices(client: StashClient) {
       state: String = "OPEN",
       order: String = "NEWEST"
   ): RequestResponse[Seq[PullRequest]] = {
+    val directionParam = "direction"
+    val stateParam = "state"
+    val orderParam = "order"
     val url =
-      s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests?direction=$direction&state=$state&order=$order"
+      s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests?$directionParam=$direction&$stateParam=$state&$orderParam=$order"
 
-    client.executePaginated(Request(url, classOf[Seq[PullRequest]]))
+    client.executePaginated(Request(url, classOf[Seq[PullRequest]]))(
+      Map(directionParam -> direction, stateParam -> state, orderParam -> order)
+    )
   }
 
   /*
@@ -34,7 +39,7 @@ class PullRequestServices(client: StashClient) {
   def getPullRequestCommits(projectKey: String, repository: String, prId: Long): RequestResponse[Seq[Commit]] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId/commits"
 
-    client.executePaginated(Request(url, classOf[Seq[Commit]]))
+    client.executePaginated(Request(url, classOf[Seq[Commit]]))()
   }
 
   /*
@@ -48,7 +53,7 @@ class PullRequestServices(client: StashClient) {
   ): RequestResponse[Seq[PullRequestComment]] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId/comments"
 
-    client.executePaginated(Request(url, classOf[Seq[PullRequestComment]]))
+    client.executePaginated(Request(url, classOf[Seq[PullRequestComment]]))()
   }
 
   /*

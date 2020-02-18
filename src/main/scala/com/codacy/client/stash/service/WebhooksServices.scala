@@ -9,7 +9,7 @@ class WebhooksServices(client: StashClient) {
   def list(projectKey: String, repositorySlug: String): RequestResponse[Seq[WebHook]] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repositorySlug/webhooks"
 
-    client.executePaginated(Request(url, classOf[Seq[WebHook]]))
+    client.executePaginated(Request(url, classOf[Seq[WebHook]]))()
   }
 
   def create(
