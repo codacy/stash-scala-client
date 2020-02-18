@@ -11,7 +11,7 @@ class BuildStatusServices(client: StashClient) {
    * Gets the build status for the given commit.
    */
   def getBuildStatus(commit: String): RequestResponse[Seq[TimestampedBuildStatus]] = {
-    client.executePaginated(Request(urlPath(commit), classOf[Seq[TimestampedBuildStatus]]), Map.empty[String, String])
+    client.executePaginated(Request(urlPath(commit), classOf[Seq[TimestampedBuildStatus]]))(Map.empty[String, String])
   }
 
   /*
