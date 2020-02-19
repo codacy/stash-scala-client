@@ -27,9 +27,9 @@ class AdminServices(client: StashClient) {
           pageRequest = pageRequest
         )(params = parameters)
       case None =>
-        client.executePaginated(
-          Request(s"$BASE/groups/more-members?context=$context$filterField", classOf[Seq[User]])
-        )(params = parameters)
+        client.executePaginated(Request(s"$BASE/groups/more-members?context=$context$filterField", classOf[Seq[User]]))(
+          params = parameters
+        )
     }
   }
 }

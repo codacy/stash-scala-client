@@ -84,10 +84,10 @@ class RepositoryServices(client: StashClient) {
   }
 
   /**
-   * Retrieve a page of groups that have been granted at least one permission for the specified repository.
-   *
-   * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
-   */
+    * Retrieve a page of groups that have been granted at least one permission for the specified repository.
+    *
+    * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
+    */
   def getRepositoryGroups(
       projectKey: String,
       repositorySlug: String,
