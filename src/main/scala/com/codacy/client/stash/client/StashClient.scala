@@ -52,7 +52,14 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
       cleanUrl,
       params ++ Map("start" -> pageRequest.getStart.toString, "limit" -> pageRequest.getLimit.toString)
     ) match {
-      case Right(json) => RequestResponse(Some((json \ "values").as[Seq[T]]))
+      case Right(json) =>
+        RequestResponse(
+          value = Some((json \ "values").as[Seq[T]]),
+          nextPageStart = (json \ "nextPageStart").asOpt[Int],
+          size = (json \ "size").asOpt[Int],
+          limit = (json \ "limit").asOpt[Int],
+          isLastPage = (json \ "isLastPage").asOpt[Boolean]
+        )
       case Left(error) =>
         error
     }
@@ -103,7 +110,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
 
       case Right((HTTPStatusCodes.OK, body)) =>
         parseJson[JsObject](body).fold({ error =>
-          RequestResponse[Boolean](None, error.message, hasError = true)
+          RequestResponse[Boolean](None, message = error.message, hasError = true)
         }, { _ =>
           RequestResponse[Boolean](Option(true))
         })
@@ -153,7 +160,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
       Right((response.code, response.body))
     } catch {
       case NonFatal(exception) =>
-        Left(RequestResponse[T](None, exception.getMessage, hasError = true))
+        Left(RequestResponse[T](value = None, message = exception.getMessage, hasError = true))
     }
   }
 
@@ -179,7 +186,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
           |Body:
           |$body
            """.stripMargin
-    RequestResponse[T](None, msg, hasError = true)
+    RequestResponse[T](None, message = msg, hasError = true)
   }
 
   private def parseJson[T](input: String): Either[RequestResponse[T], JsValue] = {
@@ -196,7 +203,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
 
     errorOpt
       .map { error =>
-        Left(RequestResponse[T](None, error, hasError = true))
+        Left(RequestResponse[T](None, message = error, hasError = true))
       }
       .getOrElse(Right(json))
   }
