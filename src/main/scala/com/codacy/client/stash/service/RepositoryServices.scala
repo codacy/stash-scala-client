@@ -32,6 +32,44 @@ class RepositoryServices(client: StashClient) {
   }
 
   /**
+    * Retrieve a page of repositories based on query parameters that control the search.
+    *
+    * @param projectName This will limit the resulting repository list to ones whose project's name matches this parameter's value
+    *                    Note that this filed IS the `Project Name` NOT the `Project Key`
+    *                    Ex: TEST will return results for TEST, TEST2, etc
+    *
+    * @param repositoryName This will limit the resulting repository list to ones whose name matches this parameter's value
+    *                       Ex: codacy will return codacy-website, codacy-worker, etc
+    *
+    * @param permissionOpt  If specified, it must be a valid repository permission level name and will limit the resulting repository list
+    *                       to ones that the requesting user has the specified permission level to.
+    *                       The currently supported explicit permission values are REPO_READ, REPO_WRITE and REPO_ADMIN.
+    *
+    * @param pageRequestOpt If specified, will return results only for the requested page
+    *
+    */
+  def search(
+      projectName: String,
+      repositoryName: String,
+      permissionOpt: Option[String],
+      pageRequestOpt: Option[PageRequest]
+  ): RequestResponse[Seq[Repository]] = {
+    val permissionQueryParam: String = permissionOpt.fold("")(permission => s"&permission=$permission")
+
+    val request: Request[Seq[Repository]] = Request(
+      s"/rest/api/1.0/repos/projectname=$projectName&name=$repositoryName$permissionQueryParam",
+      classOf[Seq[Repository]]
+    )
+
+    pageRequestOpt match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(request, pageRequest)()
+      case _ =>
+        client.executePaginated(request)()
+    }
+  }
+
+  /**
     * Retrieve a page of users that have been granted at least one permission for the specified repository.
     *
     * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
