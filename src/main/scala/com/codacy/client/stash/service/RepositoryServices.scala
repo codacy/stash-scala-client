@@ -32,6 +32,46 @@ class RepositoryServices(client: StashClient) {
   }
 
   /**
+    * Retrieve a page of repositories based on query parameters that control the search.
+    *
+    * @param projectName This will limit the resulting repository list to ones whose project's name matches this parameter's value
+    *                    The match will be done case-insensitive and any leading and/or trailing whitespace characters on the projectname parameter will be stripped.
+    *                    Note that this filed IS the `Project Name` NOT the `Project Key`
+    *                    Ex: TesT will return results for TEST, TEST2, etc
+    *
+    * @param repositoryName This will limit the resulting repository list to ones whose name matches this parameter's value
+    *                       The match will be done case-insensitive and any leading and/or trailing whitespace characters on the repositoryName parameter will be stripped.
+    *                       Ex: Codacy will return codacy-website, codacy-worker, etc
+    *
+    * @param pageRequest If specified, will return results only for the requested page
+    *
+    * @param permission  If specified, it must be a valid repository permission level name and will limit the resulting repository list
+    *                    to ones that the requesting user has the specified permission level to.
+    *                    The currently supported explicit permission values are REPO_READ, REPO_WRITE and REPO_ADMIN.
+    */
+  def search(
+      projectName: String,
+      repositoryName: String,
+      pageRequest: Option[PageRequest],
+      permission: Option[String] = None
+  ): RequestResponse[Seq[Repository]] = {
+    val baseParameters = Map("projectname" -> projectName, "name" -> repositoryName)
+
+    val parameters = permission.fold(baseParameters) { permission =>
+      baseParameters + ("permission" -> permission)
+    }
+
+    val request: Request[Seq[Repository]] = Request(s"/rest/api/1.0/repos", classOf[Seq[Repository]])
+
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(request, pageRequest)(parameters)
+      case _ =>
+        client.executePaginated(request)(parameters)
+    }
+  }
+
+  /**
     * Retrieve a page of users that have been granted at least one permission for the specified repository.
     *
     * The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project or global permission to call this resource.
