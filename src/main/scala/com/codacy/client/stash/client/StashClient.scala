@@ -1,9 +1,11 @@
 package com.codacy.client.stash.client
 
+import java.net.URL
+
 import com.codacy.client.stash.client.auth.Authenticator
 import com.codacy.client.stash.util.HTTPStatusCodes
 import play.api.libs.json._
-import scalaj.http.{Http, HttpOptions, HttpRequest, StringBodyConnectFunc}
+import scalaj.http.{Http, HttpOptions, HttpRequest, HttpResponse, StringBodyConnectFunc}
 
 import scala.util.Properties
 import scala.util.control.NonFatal
@@ -145,7 +147,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   ): Either[RequestResponse[T], (Int, String)] = {
     val url = generateUrl(requestPath)
     try {
-      val baseRequest = Http(url).method(method).params(params).options(Seq(HttpOptions.followRedirects(true)))
+      val baseRequest = Http(url).method(method).params(params)
 
       val request = payload
         .fold(baseRequest)(
@@ -157,10 +159,39 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
         )
       val authenticatedRequest = withAuthentication(request)
       val response = authenticatedRequest.asString
-      Right((response.code, response.body))
+
+      //if the response code is a redirect, follow it
+      if (HTTPStatusCodes.Redirects.all.contains(response.code)) {
+        followRedirect(method, params, payload, response)
+      } else {
+        Right((response.code, response.body))
+      }
     } catch {
       case NonFatal(exception) =>
         Left(RequestResponse[T](value = None, message = exception.getMessage, hasError = true))
+    }
+  }
+
+  /**
+    * Checks the new location on the header of the [[HttpResponse]] passed by parameter
+    * and follows the redirect by making a new request. It returns the response if it is unable
+    * to get the location from the header.
+    * @param method The method of the request
+    * @param params The parameters of the request
+    * @param payload The payload of the request
+    * @param response The response to extract the new location or to return as default.
+    */
+  private def followRedirect[T](
+      method: String,
+      params: Map[String, String],
+      payload: Option[JsValue],
+      response: HttpResponse[String]
+  ): Either[RequestResponse[T], (Int, String)] = {
+    response.headers.get("Location") match {
+      case Some(Vector(newLocation)) =>
+        val newPath = new URL(newLocation).getPath
+        doRequest(newPath, method, params, payload)
+      case _ => Right((response.code, response.body))
     }
   }
 
