@@ -14,7 +14,7 @@ class UserServices(client: StashClient) {
       .doRequest[String]("/plugins/servlet/applinks/whoami", "GET", payload = None)
       .fold(identity, {
         case (200, body) => RequestResponse(Option(body))
-        case _ => RequestResponse(Option.empty, "", hasError = true)
+        case _ => RequestResponse(value = Option.empty, hasError = true)
       })
   }
 
