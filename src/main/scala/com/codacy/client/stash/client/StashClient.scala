@@ -3,7 +3,7 @@ package com.codacy.client.stash.client
 import com.codacy.client.stash.client.auth.Authenticator
 import com.codacy.client.stash.util.HTTPStatusCodes
 import play.api.libs.json._
-import scalaj.http.{Http, HttpRequest, StringBodyConnectFunc}
+import scalaj.http.{Http, HttpOptions, HttpRequest, StringBodyConnectFunc}
 
 import scala.util.Properties
 import scala.util.control.NonFatal
@@ -145,7 +145,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
   ): Either[RequestResponse[T], (Int, String)] = {
     val url = generateUrl(requestPath)
     try {
-      val baseRequest = Http(url).method(method).params(params)
+      val baseRequest = Http(url).method(method).params(params).options(Seq(HttpOptions.followRedirects(true)))
 
       val request = payload
         .fold(baseRequest)(
