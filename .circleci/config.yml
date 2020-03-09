@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  codacy: codacy/base@1.0.1
+  codacy: codacy/base@2.6.4
 
 workflows:
   version: 2
@@ -11,39 +11,32 @@ workflows:
           write_sbt_version: true
       - codacy/sbt:
           name: populate_cache
-          install_sbt_version: 1.3.3
           persist_to_workspace: true
-          cmd: sbt ";set scalafmtUseIvy in ThisBuild := false;+update"
+          cmd: sbt "set scalafmtUseIvy in ThisBuild := false;+update"
           requires:
             - codacy/checkout_and_version
       - codacy/sbt:
           name: check_format
-          install_sbt_version: 1.3.3
-          cmd: sbt ";scalafmt::test;test:scalafmt::test;sbt:scalafmt::test"
+          cmd: sbt "scalafmt::test;test:scalafmt::test;sbt:scalafmt::test"
           requires:
             - populate_cache
       - codacy/sbt:
           name: compile
-          install_sbt_version: 1.3.3
           persist_to_workspace: true
-          cmd: sbt ";+compile;+test:compile"
+          cmd: sbt "+compile;+test:compile"
           requires:
             - populate_cache
       - codacy/sbt:
           name: test
-          install_sbt_version: 1.3.3
           cmd: |
-            sbt ";coverage;test"
-            sbt ";coverageReport"
-            sbt ";coverageAggregate"
-            sbt ";codacyCoverage"
+            sbt "coverage;test;coverageReport"
+            bash <(curl -Ls https://coverage.codacy.com/get.sh)
           requires:
             - compile
             - check_format
       - codacy/sbt:
           name: it_test
-          install_sbt_version: 1.3.3
-          cmd: sbt ";it:test"
+          cmd: sbt "it:test"
           requires:
             - compile
             - check_format
@@ -59,11 +52,8 @@ workflows:
       - codacy/sbt:
           name: publish
           context: CodacyAWS
-          install_sbt_version: 1.3.3
           cmd: |
-            sbt ";retrieveGPGKeys"
-            sbt ";++2.11.12;clean;publishSigned;sonatypeRelease"
-            sbt -DplayVersion="2.7.4" ";++2.11.12;clean;publishSigned;sonatypeRelease"
-            sbt ";++2.12.10;clean;publishSigned;sonatypeRelease"
+            sbt "retrieveGPGKeys;+publishSigned"
+            sbt -DplayVersion="2.7.4" "++2.11.12;publishSigned;sonatypeBundleRelease"
           requires:
             - tag_version
