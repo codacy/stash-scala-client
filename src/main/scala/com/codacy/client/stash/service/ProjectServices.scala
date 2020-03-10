@@ -120,14 +120,4 @@ class ProjectServices(client: StashClient) {
         )()
       case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))()
     }
-
-  /**
-    * Retrieve the avatar for the project matching the supplied projectKey.
-    *
-    * The authenticated user must have PROJECT_VIEW permission for the specified project to call this resource.
-    */
-  def findAvatar(projectKey: String, size: Option[Int]): RequestResponse[String] = {
-    client.execute(Request(s"$BASE/$projectKey/avatar?${size.getOrElse(0)}", classOf[String]))
-  }
-
 }
