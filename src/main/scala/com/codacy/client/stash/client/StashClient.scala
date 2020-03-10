@@ -15,8 +15,10 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
   /*
    * Does an API request and parses the json output into a class
    */
-  def execute[T](request: Request[T])(implicit reader: Reads[T]): RequestResponse[T] = {
-    get[T](request.path) match {
+  def execute[T](
+      request: Request[T]
+  )(params: Map[String, String] = Map.empty)(implicit reader: Reads[T]): RequestResponse[T] = {
+    get[T](request.path, params) match {
       case Right(json) => RequestResponse(json.asOpt[T])
       case Left(error) => error
     }
@@ -105,8 +107,8 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
     }
   }
 
-  def delete(requestUrl: String): RequestResponse[Boolean] = {
-    doRequest[Boolean](requestUrl, "DELETE", Map.empty, None) match {
+  def delete(requestUrl: String)(params: Map[String, String] = Map.empty): RequestResponse[Boolean] = {
+    doRequest[Boolean](requestUrl, "DELETE", params, None) match {
       case Right((HTTPStatusCodes.NO_CONTENT, _)) =>
         RequestResponse[Boolean](Option(true))
 

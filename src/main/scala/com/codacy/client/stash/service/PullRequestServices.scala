@@ -25,7 +25,7 @@ class PullRequestServices(client: StashClient) {
     val stateParam = "state"
     val orderParam = "order"
     val url =
-      s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests?$directionParam=$direction&$stateParam=$state&$orderParam=$order"
+      s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests"
 
     client.executePaginated(Request(url, classOf[Seq[PullRequest]]))(
       Map(directionParam -> direction, stateParam -> state, orderParam -> order)
@@ -85,9 +85,9 @@ class PullRequestServices(client: StashClient) {
    * Delete a comment in a pull request
    */
   def deleteComment(projectKey: String, repo: String, prId: Long, commentId: Long): RequestResponse[Boolean] = {
-    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments/$commentId?version=0"
+    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repo/pull-requests/$prId/comments/$commentId"
 
-    client.delete(url)
+    client.delete(url)(Map("version" -> "0"))
   }
 
   def getPullRequestsReviewers(
@@ -97,6 +97,6 @@ class PullRequestServices(client: StashClient) {
   ): RequestResponse[PullRequestReviewers] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests/$prId"
 
-    client.execute(Request(url, classOf[PullRequestReviewers]))
+    client.execute(Request(url, classOf[PullRequestReviewers]))()
   }
 }

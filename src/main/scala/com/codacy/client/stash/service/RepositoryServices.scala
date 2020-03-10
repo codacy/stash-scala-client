@@ -28,7 +28,7 @@ class RepositoryServices(client: StashClient) {
     * The authenticated user must have REPO_READ permission for the specified repository to call this resource.
     */
   def getRepository(projectKey: String, repositorySlug: String): RequestResponse[Repository] = {
-    client.execute(Request(s"$BASE/$projectKey/repos/$repositorySlug", classOf[Repository]))
+    client.execute(Request(s"$BASE/$projectKey/repos/$repositorySlug", classOf[Repository]))()
   }
 
   /**
@@ -107,18 +107,12 @@ class RepositoryServices(client: StashClient) {
     pageRequest match {
       case Some(pageRequest) =>
         client.executePaginatedWithPageRequest(
-          Request(
-            s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
-            classOf[Seq[UserPermission]]
-          ),
+          Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]]),
           pageRequest = pageRequest
         )(params = filterParam)
       case None =>
         client.executePaginated(
-          Request(
-            s"$BASE/$projectKey/repos/$repositorySlug/permissions/users?filter=$user",
-            classOf[Seq[UserPermission]]
-          )
+          Request(s"$BASE/$projectKey/repos/$repositorySlug/permissions/users", classOf[Seq[UserPermission]])
         )(params = filterParam)
     }
   }

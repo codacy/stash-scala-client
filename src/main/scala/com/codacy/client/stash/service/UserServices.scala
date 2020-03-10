@@ -22,21 +22,23 @@ class UserServices(client: StashClient) {
     * Gets the basic information associated with the token owner account.
     */
   def getUsers: RequestResponse[Seq[User]] = {
-    client.execute(Request("/rest/api/1.0/users", classOf[Seq[User]]))
+    client.execute(Request("/rest/api/1.0/users", classOf[Seq[User]]))()
   }
 
   /**
     * Gets the basic information associated with an account.
     */
   def getUser(username: String): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))
+    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))()
   }
 
   /**
     * Gets the basic information associated with an account, including their avatarUrls.
     */
   def getUserWithAvatar(username: String, size: Option[Int]): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username?avatarSize=${size.getOrElse(64)}", classOf[User]))
+    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))(
+      Map("avatarSize" -> size.getOrElse(64).toString)
+    )
   }
 
   /**
@@ -67,7 +69,7 @@ class UserServices(client: StashClient) {
   def deleteUserKey(keyId: Long): RequestResponse[Boolean] = {
     val url = s"/rest/ssh/1.0/keys/$keyId"
 
-    client.delete(url)
+    client.delete(url)()
   }
 
 }
