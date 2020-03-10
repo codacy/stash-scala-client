@@ -14,7 +14,7 @@ object Dependencies {
     }
 
     playJsonVersion match {
-      case jsonVersion if Seq(playJson24, playJson25).contains(jsonVersion) => Seq("com.typesafe.play" %% "play-json" % jsonVersion)
+      case `playJson24` | `playJson25` => Seq("com.typesafe.play" %% "play-json" % playJsonVersion)
       case jsonVersion =>
         Seq("com.typesafe.play" %% "play-json" % jsonVersion, "com.typesafe.play" %% "play-json-joda" % jsonVersion)
     }
