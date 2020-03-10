@@ -40,15 +40,6 @@ workflows:
           requires:
             - compile
             - check_format
-      - codacy/tag_version:
-          name: tag_version
-          context: CodacyAWS
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - master
       - codacy/sbt:
           name: publish
           context: CodacyAWS
@@ -56,4 +47,14 @@ workflows:
             sbt "retrieveGPGKeys;+publishSigned"
             sbt -DplayVersion="2.7.4" "++2.11.12;publishSigned;sonatypeBundleRelease"
           requires:
-            - tag_version
+            - test
+            - it_test
+      - codacy/tag_version:
+          name: tag_version
+          context: CodacyAWS
+          requires:
+            - publish
+          filters:
+            branches:
+              only:
+                - master
