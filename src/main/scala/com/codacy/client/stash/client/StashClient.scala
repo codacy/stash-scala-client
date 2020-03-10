@@ -147,10 +147,14 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
   ): Either[RequestResponse[T], (Int, String)] = {
     val url = generateUrl(requestPath)
     try {
-      val baseRequest = Http(url).method(method).params(params)
+      val baseRequestWithoutCertificatesOption = Http(url).method(method).params(params)
 
-      if (acceptAllCertificates)
-        baseRequest.option(HttpOptions.allowUnsafeSSL)
+      val baseRequest =
+        if (acceptAllCertificates) {
+          baseRequestWithoutCertificatesOption.option(HttpOptions.allowUnsafeSSL)
+        } else {
+          baseRequestWithoutCertificatesOption
+        }
 
       val request = payload
         .fold(baseRequest)(
