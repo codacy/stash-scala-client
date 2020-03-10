@@ -10,7 +10,7 @@ import scalaj.http.{Http, HttpOptions, HttpRequest, HttpResponse, StringBodyConn
 import scala.util.Properties
 import scala.util.control.NonFatal
 
-class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
+class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, acceptAllCertificates: Boolean = false) {
 
   /*
    * Does an API request and parses the json output into a class
@@ -148,6 +148,9 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None) {
     val url = generateUrl(requestPath)
     try {
       val baseRequest = Http(url).method(method).params(params)
+
+      if (acceptAllCertificates)
+        baseRequest.option(HttpOptions.allowUnsafeSSL)
 
       val request = payload
         .fold(baseRequest)(
