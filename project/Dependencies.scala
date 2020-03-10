@@ -2,6 +2,7 @@ import sbt._
 
 object Dependencies {
 
+  val playJson24: String = "2.4.3"
   val playJson25: String = "2.5.19"
   val playJson27: String = "2.7.4"
 
@@ -13,7 +14,7 @@ object Dependencies {
     }
 
     playJsonVersion match {
-      case jsonVersion if jsonVersion == playJson25 => Seq("com.typesafe.play" %% "play-json" % jsonVersion)
+      case jsonVersion if Seq(playJson24, playJson25).contains(jsonVersion) => Seq("com.typesafe.play" %% "play-json" % jsonVersion)
       case jsonVersion =>
         Seq("com.typesafe.play" %% "play-json" % jsonVersion, "com.typesafe.play" %% "play-json-joda" % jsonVersion)
     }
