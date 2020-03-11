@@ -58,7 +58,7 @@ class WebhooksServices(client: StashClient) {
   def delete(projectKey: String, repositorySlug: String, webhookId: Long): RequestResponse[Boolean] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repositorySlug/webhooks/$webhookId"
 
-    client.delete(url)
+    client.delete(url)()
   }
 
 }
