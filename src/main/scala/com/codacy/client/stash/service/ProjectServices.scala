@@ -11,7 +11,7 @@ class ProjectServices(client: StashClient) {
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findById(projectKey: String): RequestResponse[Project] = {
-    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))
+    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))()
   }
 
   /**
@@ -32,16 +32,20 @@ class ProjectServices(client: StashClient) {
       projectKey: String,
       user: String,
       pageRequest: Option[PageRequest]
-  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
-    case Some(pageRequest) =>
-      client.executePaginatedWithPageRequest(
-        Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]]),
-        pageRequest = pageRequest
-      )()
-    case None =>
-      client.executePaginated(
-        Request(s"$BASE/$projectKey/permissions/users?filter=$user", classOf[Seq[UserPermission]])
-      )()
+  ): RequestResponse[Seq[UserPermission]] = {
+    val parameters = Map("filter" -> user)
+
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(
+          Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]),
+          pageRequest = pageRequest
+        )(params = parameters)
+      case None =>
+        client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))(
+          params = parameters
+        )
+    }
   }
 
   /**
@@ -88,22 +92,20 @@ class ProjectServices(client: StashClient) {
       projectKey: String,
       avatarSize: Option[Int],
       pageRequest: Option[PageRequest]
-  ): RequestResponse[Seq[UserPermission]] = pageRequest match {
-    case Some(pageRequest) =>
-      client.executePaginatedWithPageRequest(
-        Request(
-          s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
-          classOf[Seq[UserPermission]]
-        ),
-        pageRequest
-      )()
-    case None =>
-      client.executePaginated(
-        Request(
-          s"$BASE/$projectKey/permissions/users?avatarSize=${avatarSize.getOrElse(0)}",
-          classOf[Seq[UserPermission]]
+  ): RequestResponse[Seq[UserPermission]] = {
+    val parameters = Map("avatarSize" -> avatarSize.getOrElse(64).toString)
+
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(
+          Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]),
+          pageRequest
+        )(params = parameters)
+      case None =>
+        client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))(
+          params = parameters
         )
-      )()
+    }
   }
 
   /**
@@ -120,14 +122,4 @@ class ProjectServices(client: StashClient) {
         )()
       case None => client.executePaginated(Request(s"$BASE/$projectKey/permissions/groups", classOf[Seq[Group]]))()
     }
-
-  /**
-    * Retrieve the avatar for the project matching the supplied projectKey.
-    *
-    * The authenticated user must have PROJECT_VIEW permission for the specified project to call this resource.
-    */
-  def findAvatar(projectKey: String, size: Option[Int]): RequestResponse[String] = {
-    client.execute(Request(s"$BASE/$projectKey/avatar?${size.getOrElse(0)}", classOf[String]))
-  }
-
 }
