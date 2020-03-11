@@ -19,17 +19,21 @@ class PullRequestServices(client: StashClient) {
       repository: String,
       direction: String = "INCOMING",
       state: String = "OPEN",
-      order: String = "NEWEST"
+      order: String = "NEWEST",
+      includeAvatar: Boolean = false
   ): RequestResponse[Seq[PullRequest]] = {
-    val directionParam = "direction"
-    val stateParam = "state"
-    val orderParam = "order"
-    val url =
-      s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests"
+    val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests"
 
-    client.executePaginated(Request(url, classOf[Seq[PullRequest]]))(
-      Map(directionParam -> direction, stateParam -> state, orderParam -> order)
-    )
+    val baseParams = Map("direction" -> direction, "state" -> state, "order" -> order)
+
+    val params =
+      if (includeAvatar) {
+        baseParams + ("avatarSize" -> "64")
+      } else {
+        baseParams
+      }
+
+    client.executePaginated(Request(url, classOf[Seq[PullRequest]]))(params)
   }
 
   /*
