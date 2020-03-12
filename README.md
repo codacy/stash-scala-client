@@ -1,7 +1,7 @@
 # stash-scala-client
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/manual/Codacy/stash-scala-client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=codacy/stash-scala-client&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/manual/Codacy/stash-scala-client?utm_source=github.com&utm_medium=referral&utm_content=codacy/stash-scala-client&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/gh/codacy/stash-scala-client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=codacy/stash-scala-client&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/3c6fbd37c5ec45eeadab6e98d7c55b27)](https://www.codacy.com/gh/codacy/stash-scala-client?utm_source=github.com&utm_medium=referral&utm_content=codacy/stash-scala-client&utm_campaign=Badge_Coverage)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codacy/stash-scala-client_2.11)
 
 This is a simple library that aims to have basic functions of the Stash API.
