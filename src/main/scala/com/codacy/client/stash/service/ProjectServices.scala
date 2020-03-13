@@ -2,6 +2,7 @@ package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{PageRequest, Request, RequestResponse, StashClient}
 import com.codacy.client.stash._
+import com.codacy.client.stash.util.AvatarUtil
 
 class ProjectServices(client: StashClient) {
 
@@ -11,7 +12,7 @@ class ProjectServices(client: StashClient) {
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findById(projectKey: String, includeAvatar: Boolean = false): RequestResponse[Project] = {
-    val params = if (includeAvatar) Map("avatarSize" -> "64") else Map.empty[String, String]
+    val params = AvatarUtil.addAvatarToParams(includeAvatar)
 
     client.execute(Request(s"$BASE/$projectKey", classOf[Project]))(params)
   }
@@ -20,7 +21,7 @@ class ProjectServices(client: StashClient) {
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findAll(pageRequest: Option[PageRequest], includeAvatar: Boolean = false): RequestResponse[Seq[Project]] = {
-    val params = if (includeAvatar) Map("avatarSize" -> "64") else Map.empty[String, String]
+    val params = AvatarUtil.addAvatarToParams(includeAvatar)
 
     pageRequest match {
       case Some(pageRequest) =>
