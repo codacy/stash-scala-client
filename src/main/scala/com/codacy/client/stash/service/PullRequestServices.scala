@@ -1,6 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
+import com.codacy.client.stash.util.AvatarUtils
 import com.codacy.client.stash.{Commit, PullRequest, PullRequestComment, PullRequestReviewers}
 import play.api.libs.json._
 
@@ -23,15 +24,8 @@ class PullRequestServices(client: StashClient) {
       includeAvatar: Boolean = false
   ): RequestResponse[Seq[PullRequest]] = {
     val url = s"/rest/api/1.0/projects/$projectKey/repos/$repository/pull-requests"
-
     val baseParams = Map("direction" -> direction, "state" -> state, "order" -> order)
-
-    val params =
-      if (includeAvatar) {
-        baseParams + ("avatarSize" -> "64")
-      } else {
-        baseParams
-      }
+    val params = if (includeAvatar) baseParams ++ AvatarUtils.avatarParams else baseParams
 
     client.executePaginated(Request(url, classOf[Seq[PullRequest]]))(params)
   }

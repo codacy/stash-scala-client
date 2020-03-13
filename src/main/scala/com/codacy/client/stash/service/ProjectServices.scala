@@ -2,6 +2,7 @@ package com.codacy.client.stash.service
 
 import com.codacy.client.stash.client.{PageRequest, Request, RequestResponse, StashClient}
 import com.codacy.client.stash._
+import com.codacy.client.stash.util.AvatarUtils
 
 class ProjectServices(client: StashClient) {
 
@@ -10,17 +11,23 @@ class ProjectServices(client: StashClient) {
   /**
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
-  def findById(projectKey: String): RequestResponse[Project] = {
-    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))()
+  def findById(projectKey: String, includeAvatar: Boolean = false): RequestResponse[Project] = {
+    val params = if (includeAvatar) AvatarUtils.avatarParams else Map.empty[String, String]
+
+    client.execute(Request(s"$BASE/$projectKey", classOf[Project]))(params)
   }
 
   /**
     * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
-  def findAll(pageRequest: Option[PageRequest]): RequestResponse[Seq[Project]] = pageRequest match {
-    case Some(pageRequest) =>
-      client.executePaginatedWithPageRequest(Request(BASE, classOf[Seq[Project]]), pageRequest = pageRequest)()
-    case None => client.executePaginated(Request(BASE, classOf[Seq[Project]]))()
+  def findAll(pageRequest: Option[PageRequest], includeAvatar: Boolean = false): RequestResponse[Seq[Project]] = {
+    val params = if (includeAvatar) AvatarUtils.avatarParams else Map.empty[String, String]
+
+    pageRequest match {
+      case Some(pageRequest) =>
+        client.executePaginatedWithPageRequest(Request(BASE, classOf[Seq[Project]]), pageRequest = pageRequest)(params)
+      case None => client.executePaginated(Request(BASE, classOf[Seq[Project]]))(params)
+    }
   }
 
   /**
