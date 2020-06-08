@@ -19,26 +19,30 @@ class UserServices(client: StashClient) {
   }
 
   /**
-    * Gets the basic information associated with the token owner account.
+    * Gets the basic information associated with the token owner account with a optional filter.
     */
-  def getUsers: RequestResponse[Seq[User]] = {
-    client.execute(Request("/rest/api/1.0/users", classOf[Seq[User]]))()
+  def getUsers(filter: Option[String]): RequestResponse[Seq[User]] = {
+    val baseUrl = "/rest/api/1.0/users"
+    val url = filter.fold(baseUrl)(f => s"$baseUrl?name=$f")
+    client.execute(Request(url, classOf[Seq[User]]))
   }
 
   /**
     * Gets the basic information associated with an account.
     */
   def getUser(username: String): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))()
+    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))().value.orElse {
+      getUsers(Option(username)).value.flatMap(_.collectFirst { case user if user.username == username => user })
+    }.fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
   }
 
   /**
     * Gets the basic information associated with an account, including their avatarUrls.
     */
   def getUserWithAvatar(username: String, size: Option[Int]): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))(
-      Map("avatarSize" -> size.getOrElse(64).toString)
-    )
+    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))(Map("avatarSize" -> size.getOrElse(64).toString)).value.orElse {
+      getUsers(Option(username)).value.flatMap(_.collectFirst { case user if user.username == username => user })
+    }.fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
   }
 
   /**
