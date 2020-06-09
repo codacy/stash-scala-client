@@ -7,7 +7,7 @@ import org.scalatest.WordSpec
 trait AuthHelpers {
   self: WordSpec =>
 
-  val basicAuth: Authenticator = {
+  lazy val basicAuth: Authenticator = {
     (for {
       username <- sys.env.get("BB_SERVER_USERNAME")
       password <- sys.env.get("BB_SERVER_PASSWORD")
@@ -16,7 +16,7 @@ trait AuthHelpers {
     }).getOrElse(fail("Failed to obtain configurations to instantiate the BasicAuthenticator"))
   }
 
-  val oauth1: Authenticator = {
+  lazy val oauth1: Authenticator = {
     (for {
       authKey <- sys.env.get("BB_SERVER_CONSUMER_KEY")
       authSecret <- sys.env.get("BB_SERVER_CONSUMER_SECRET")
