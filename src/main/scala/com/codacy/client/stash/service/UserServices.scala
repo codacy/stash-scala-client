@@ -76,16 +76,22 @@ class UserServices(client: StashClient) {
   }
 
   /**
-   *
-   * We need this fallback for the cases when a username contains special characters because the
-   * getUser method don't find them and the only way is passing the name as a filter on getUsers method
-   *
-   */
-  private def getUserFallback(username: String, params: Map[String, String], userResponse: RequestResponse[User]): RequestResponse[User] = {
-    userResponse.value.orElse {
-      // Since we are using a filter as query parameter this can bring more users and we need to find the one using the username passed by parameter as name
-      getUsers(Option(username), params).value.flatMap(_.find(_.name == username))
-    }.fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
+    *
+    * We need this fallback for the cases when a username contains special characters because the
+    * getUser method don't find them and the only way is passing the name as a filter on getUsers method
+    *
+    */
+  private def getUserFallback(
+      username: String,
+      params: Map[String, String],
+      userResponse: RequestResponse[User]
+  ): RequestResponse[User] = {
+    userResponse.value
+      .orElse {
+        // Since we are using a filter as query parameter this can bring more users and we need to find the one using the username passed by parameter as name
+        getUsers(Option(username), params).value.flatMap(_.find(_.name == username))
+      }
+      .fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
   }
 
 }

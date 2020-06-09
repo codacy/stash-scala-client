@@ -4,8 +4,8 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 /**
- * @param username This field is actually the slug on bitbucket server side which is the one that should be used for doing requests
- */
+  * @param username This field is actually the slug on bitbucket server side which is the one that should be used for doing requests
+  */
 final case class User(
     username: String,
     email: Option[String],

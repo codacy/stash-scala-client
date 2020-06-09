@@ -47,14 +47,15 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar with Aut
       response.value.map(_.username) shouldBe Some(username)
     }
 
-    "fallback to getUsers and return a user when an username contains special characters" in withClient(basicAuth) { client =>
-      val username = "test@codacy.com"
-      val service = new UserServices(client)
+    "fallback to getUsers and return a user when an username contains special characters" in withClient(basicAuth) {
+      client =>
+        val username = "test@codacy.com"
+        val service = new UserServices(client)
 
-      val response = service.getUser(username)
+        val response = service.getUser(username)
 
-      response.hasError shouldBe false
-      response.value.map(_.name) shouldBe Some(username)
+        response.hasError shouldBe false
+        response.value.map(_.name) shouldBe Some(username)
     }
   }
 }
