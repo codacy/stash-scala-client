@@ -21,28 +21,27 @@ class UserServices(client: StashClient) {
   /**
     * Gets the basic information associated with the token owner account with a optional filter.
     */
-  def getUsers(filter: Option[String]): RequestResponse[Seq[User]] = {
+  def getUsers(name: Option[String] = None, params: Map[String, String] = Map.empty): RequestResponse[Seq[User]] = {
+    val extraParams = name.map("filter" -> _).toMap
     val baseUrl = "/rest/api/1.0/users"
-    val url = filter.fold(baseUrl)(f => s"$baseUrl?name=$f")
-    client.execute(Request(url, classOf[Seq[User]]))
+    client.executePaginated(Request(baseUrl, classOf[Seq[User]]))(params ++ extraParams)
   }
 
   /**
     * Gets the basic information associated with an account.
     */
   def getUser(username: String): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))().value.orElse {
-      getUsers(Option(username)).value.flatMap(_.collectFirst { case user if user.username == username => user })
-    }.fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
+    val response = client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))()
+    getUserFallback(username, Map.empty, response)
   }
 
   /**
     * Gets the basic information associated with an account, including their avatarUrls.
     */
   def getUserWithAvatar(username: String, size: Option[Int]): RequestResponse[User] = {
-    client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))(Map("avatarSize" -> size.getOrElse(64).toString)).value.orElse {
-      getUsers(Option(username)).value.flatMap(_.collectFirst { case user if user.username == username => user })
-    }.fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
+    val params = Map("avatarSize" -> size.getOrElse(64).toString)
+    val response = client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))(params)
+    getUserFallback(username, params, response)
   }
 
   /**
@@ -74,6 +73,19 @@ class UserServices(client: StashClient) {
     val url = s"/rest/ssh/1.0/keys/$keyId"
 
     client.delete(url)()
+  }
+
+  /**
+   *
+   * We need this fallback for the cases when a username contains special characters because the
+   * getUser method don't find them and the only way is passing the name as a filter on getUsers method
+   *
+   */
+  private def getUserFallback(username: String, params: Map[String, String], userResponse: RequestResponse[User]): RequestResponse[User] = {
+    userResponse.value.orElse {
+      // Since we are using a filter as query parameter this can bring more users and we need to find the one using the username passed by parameter as name
+      getUsers(Option(username), params).value.flatMap(_.find(_.name == username))
+    }.fold(RequestResponse[User](None))(user => RequestResponse[User](Option(user)))
   }
 
 }
