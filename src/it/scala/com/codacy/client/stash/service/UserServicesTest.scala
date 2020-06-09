@@ -1,7 +1,7 @@
 package com.codacy.client.stash.service
 
 import com.codacy.client.stash.helpers.{AuthHelpers, SSHKeyGenerator}
-import org.scalatest.{Ignore, Matchers, WordSpec}
+import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.mockito.MockitoSugar
 
 class UserServicesTest extends WordSpec with Matchers with MockitoSugar with AuthHelpers {
@@ -33,6 +33,28 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar with Aut
       response.value.map { key =>
         service.deleteUserKey(key.id)
       }
+    }
+  }
+
+  "getUser" should {
+    "return a user when an username doesn't contains special characters" in withClient(basicAuth) { client =>
+      val username = "dev"
+      val service = new UserServices(client)
+
+      val response = service.getUser(username)
+
+      response.hasError shouldBe false
+      response.value.map(_.username) shouldBe Some(username)
+    }
+
+    "fallback to getUsers and return a user when an username contains special characters" in withClient(basicAuth) { client =>
+      val username = "test@codacy.com"
+      val service = new UserServices(client)
+
+      val response = service.getUser(username)
+
+      response.hasError shouldBe false
+      response.value.map(_.name) shouldBe Some(username)
     }
   }
 }
