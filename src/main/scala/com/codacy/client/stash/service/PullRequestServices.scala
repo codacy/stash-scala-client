@@ -1,6 +1,6 @@
 package com.codacy.client.stash.service
 
-import com.codacy.client.stash.client.{Request, RequestResponse, StashClient}
+import com.codacy.client.stash.client.{PageRequest, Request, RequestResponse, StashClient}
 import com.codacy.client.stash.util.AvatarUtils
 import com.codacy.client.stash.{Commit, PullRequest, PullRequestComment, PullRequestReviewers}
 import play.api.libs.json._
@@ -18,6 +18,7 @@ class PullRequestServices(client: StashClient) {
   def getPullRequests(
       projectKey: String,
       repository: String,
+      pageRequest: Option[PageRequest],
       direction: String = "INCOMING",
       state: String = "OPEN",
       order: String = "NEWEST",
@@ -27,7 +28,14 @@ class PullRequestServices(client: StashClient) {
     val baseParams = Map("direction" -> direction, "state" -> state, "order" -> order)
     val params = if (includeAvatar) baseParams ++ AvatarUtils.avatarParams else baseParams
 
-    client.executePaginated(Request(url, classOf[Seq[PullRequest]]))(params)
+    val request = Request(url, classOf[Seq[PullRequest]])
+
+    pageRequest match {
+      case Some(page) =>
+        client.executePaginatedWithPageRequest(request, page)(params)
+      case None =>
+        client.executePaginated(request)(params)
+    }
   }
 
   /*
