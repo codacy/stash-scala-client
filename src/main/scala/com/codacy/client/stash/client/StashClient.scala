@@ -2,6 +2,7 @@ package com.codacy.client.stash.client
 
 import java.net.URL
 
+import codacy.foundation.utils.Logger
 import com.codacy.client.stash.client.auth.Authenticator
 import com.codacy.client.stash.util.HTTPStatusCodes
 import play.api.libs.json._
@@ -10,7 +11,7 @@ import scalaj.http.{Http, HttpOptions, HttpRequest, HttpResponse, StringBodyConn
 import scala.util.Properties
 import scala.util.control.NonFatal
 
-class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, acceptAllCertificates: Boolean = false) {
+class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, acceptAllCertificates: Boolean = false) extends Logger {
 
   /*
    * Does an API request and parses the json output into a class
@@ -148,6 +149,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
       payload: Option[JsValue] = None
   ): Either[RequestResponse[T], (Int, String)] = {
     val url = generateUrl(requestPath)
+    logger.info("[StashClient::doRequest] url: "+url)
     try {
       val baseRequestWithoutCertificatesOption = Http(url).method(method).params(params)
 
@@ -198,6 +200,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
   ): Either[RequestResponse[T], (Int, String)] = {
     response.headers.get("Location") match {
       case Some(Vector(newLocation)) =>
+        logger.info("[StashClient::followRedirect] newLocation: "+newLocation)
         val newPath = new URL(newLocation).getPath
         doRequest(newPath, method, params, payload)
       case _ => Right((response.code, response.body))
