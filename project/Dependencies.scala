@@ -6,9 +6,7 @@ object Dependencies {
   val playJson25: String = "2.5.19"
   val playJson27: String = "2.7.4"
 
-  val playVer = "_play_2.7"
 
-  val foundation = "com.codacy" %% "foundation" % s"11.0.0$playVer" withSources ()
 
 
   def playJson(scalaVersion: String): Seq[ModuleID] = {
