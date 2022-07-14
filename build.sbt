@@ -11,6 +11,7 @@ val stashScalaClient = project
     scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Ywarn-adapted-args", "-Xlint"),
     libraryDependencies ++= Seq(jodaTime, scalajHttp) ++ Dependencies.playJson(scalaVersion.value),
     libraryDependencies ++= Seq(scalatest, mockitoScalaScalatest, jsch).map(_ % "test,it"),
+    libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
     organizationName := "Codacy",
     organizationHomepage := Some(new URL("https://www.codacy.com")),
     startYear := Some(2015),
