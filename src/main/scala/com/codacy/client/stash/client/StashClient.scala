@@ -129,10 +129,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
     }
   }
 
-  private def get[T](
-      requestUrl: String,
-      params: Map[String, String] = Map.empty
-  ): Either[RequestResponse[T], JsValue] = {
+  private def get[T](requestUrl: String, params: Map[String, String]): Either[RequestResponse[T], JsValue] = {
     doRequest[T](requestUrl, "GET", params, None) match {
       case Right((HTTPStatusCodes.OK | HTTPStatusCodes.CREATED, body)) =>
         parseJson[T](body)
