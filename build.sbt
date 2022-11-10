@@ -1,16 +1,15 @@
-import codacy.libs._
-
 val stashScalaClient = project
   .in(file("."))
   .configs(IntegrationTest)
   .settings(Defaults.itSettings)
   .settings(
     name := "stash-scala-client",
-    scalaVersion := crossScalaVersions.value(1),
-    crossScalaVersions := Seq("2.11.12", "2.12.10"),
+    scalaVersion := crossScalaVersions.value.head,
+    crossScalaVersions := Seq("2.12.10"),
     scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Ywarn-adapted-args", "-Xlint"),
-    libraryDependencies ++= Seq(jodaTime, scalajHttp) ++ Dependencies.playJson(scalaVersion.value),
-    libraryDependencies ++= Seq(scalatest, mockitoScalaScalatest, jsch).map(_ % "test,it"),
+    libraryDependencies ++= Seq(Dependencies.jodaTime, Dependencies.scalajHttp) ++ Dependencies.playJson,
+    libraryDependencies ++= Seq(Dependencies.scalatest, Dependencies.mockitoScalaScalatest, Dependencies.jsch)
+      .map(_ % "test,it"),
     libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
     organizationName := "Codacy",
     organizationHomepage := Some(new URL("https://www.codacy.com")),
@@ -29,17 +28,7 @@ val stashScalaClient = project
     pgpPassphrase := Option(System.getenv("SONATYPE_GPG_PASSPHRASE")).map(_.toCharArray),
     publicMvnPublish
   )
-  .settings(Compile / unmanagedSourceDirectories += {
-    Dependencies.playJson(scalaVersion.value).head.revision match {
-      case (Dependencies.playJson24 | Dependencies.playJson25) =>
-        (Compile / baseDirectory).value / "src" / "main" / "play_json_2.5-"
-      case Dependencies.playJson27 => (Compile / baseDirectory).value / "src" / "main" / "play_json_2.7"
-      case _ => throw new Exception("Unsupported Play JSON version")
-    }
-  })
-  .settings(name := (Dependencies.playJson(scalaVersion.value).head.revision match {
-    case Dependencies.playJson24 => s"${name.value}_playjson24"
-    case Dependencies.playJson25 => s"${name.value}_playjson25"
-    case Dependencies.playJson27 => s"${name.value}_playjson27"
+  .settings(name := (Dependencies.playJson.head.revision.split('.').take(2) match {
+    case Array("2", "7") => s"${name.value}_playjson27"
     case _ => throw new Exception("Unsupported Play JSON version")
   }))
