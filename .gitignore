@@ -19,4 +19,4 @@ dist
 *.iml
 codacy.pylint.conf
 npm-debug.log
-config
+config.git/
