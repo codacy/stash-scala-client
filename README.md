@@ -60,3 +60,4 @@ Codacy is free for Open Source projects.
 ### License
 
 stash-scala-client is available under the The Apache Software License, Version 2.0.
+test
