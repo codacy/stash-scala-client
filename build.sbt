@@ -5,7 +5,7 @@ val stashScalaClient = project
   .settings(
     name := "stash-scala-client",
     scalaVersion := crossScalaVersions.value.head,
-    crossScalaVersions := Seq("2.12.10"),
+    crossScalaVersions := Seq("2.12.20"),
     scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Ywarn-adapted-args", "-Xlint"),
     libraryDependencies ++= Seq(Dependencies.jodaTime, Dependencies.scalajHttp) ++ Dependencies.playJson,
     libraryDependencies ++= Seq(Dependencies.scalatest, Dependencies.mockitoScalaScalatest, Dependencies.jsch)
