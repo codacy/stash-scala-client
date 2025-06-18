@@ -18,9 +18,7 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar with Aut
       }
 
       response.hasError shouldBe false
-      response.value.map { key =>
-        service.deleteUserKey(key.id)
-      }
+      response.value.map { key => service.deleteUserKey(key.id) }
     }
 
     "(using oauth1 tokens) create a status with no errors returned" in withClient(oauth1) { client =>
@@ -30,9 +28,7 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar with Aut
       val response = service.createUserKey(publicKey)
 
       response.hasError shouldBe false
-      response.value.map { key =>
-        service.deleteUserKey(key.id)
-      }
+      response.value.map { key => service.deleteUserKey(key.id) }
     }
   }
 

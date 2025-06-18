@@ -7,8 +7,7 @@ class AdminServices(client: StashClient) {
 
   val BASE: String = "/rest/api/1.0/admin"
 
-  /**
-    * Retrieves a list of users that are members of a specified group.
+  /** Retrieves a list of users that are members of a specified group.
     *
     * The authenticated user must have the LICENSED_USER permission to call this resource.
     */
@@ -19,9 +18,7 @@ class AdminServices(client: StashClient) {
   ): RequestResponse[Seq[User]] = {
     val baseParameters = Map("context" -> context)
 
-    val parameters = filter.fold(baseParameters) { filter =>
-      baseParameters + ("filter" -> filter)
-    }
+    val parameters = filter.fold(baseParameters) { filter => baseParameters + ("filter" -> filter) }
 
     pageRequest match {
       case Some(pageRequest) =>

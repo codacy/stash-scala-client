@@ -32,14 +32,17 @@ class BuildStatusServicesTest extends WordSpec with Matchers with MockitoSugar {
       val value: JsResult[TimestampedBuildStatus] = json.validate[TimestampedBuildStatus]
 
       // THEN
-      value.fold(e => fail(s"$e"), r => {
-        r.state shouldBe CommitStatus.InProgress
-        r.key shouldBe "SOMETHING"
-        r.name shouldBe "SOMETHING-12"
-        r.url shouldBe "https://whatever.com/browse/SOMETHING-12"
-        r.description shouldBe "Some description"
-        r.dateAdded shouldBe new DateTime(1524576682976L)
-      })
+      value.fold(
+        e => fail(s"$e"),
+        r => {
+          r.state shouldBe CommitStatus.InProgress
+          r.key shouldBe "SOMETHING"
+          r.name shouldBe "SOMETHING-12"
+          r.url shouldBe "https://whatever.com/browse/SOMETHING-12"
+          r.description shouldBe "Some description"
+          r.dateAdded shouldBe new DateTime(1524576682976L)
+        }
+      )
     }
 
     "correctly call the client" in {
