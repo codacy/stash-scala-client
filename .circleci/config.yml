@@ -19,6 +19,7 @@ workflows:
           requires:
             - codacy/checkout_and_version
       - codacy/sbt:
+          name: compile_and_test
           persist_to_workspace: true
           cache_prefix: *cache_prefix
           steps_before_sbt:
