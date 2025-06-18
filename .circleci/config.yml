@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  codacy: codacy/base@9.0.0
+  codacy: codacy/base@12.2.0
 
 
 
@@ -14,12 +14,12 @@ workflows:
       - codacy/sbt:
           name: populate_cache
           persist_to_workspace: true
-          cmd: sbt "set scalafmtUseIvy in ThisBuild := false;+update"
+          cmd: sbt "+update"
           requires:
             - codacy/checkout_and_version
       - codacy/sbt:
           name: check_format
-          cmd: sbt "scalafmt::test;test:scalafmt::test;sbt:scalafmt::test"
+          cmd: sbt "scalafmtCheckAll;Test / scalafmtCheck;scalafmtSbtCheck"
           requires:
             - populate_cache
       - codacy/sbt:
@@ -56,7 +56,7 @@ workflows:
           context: CodacyAWS
           cmd: |
             sbt "retrieveGPGKeys;+publishSigned"
-            sbt -DplayVersion="2.4.3" "++2.11.12;publishSigned"
-            sbt -DplayVersion="2.7.4" "++2.11.12;publishSigned;sonatypeBundleRelease"
+            sbt "retrieveGPGKeys" -DplayVersion="2.4.3" "++2.11.12;publishSigned"
+            sbt "retrieveGPGKeys" -DplayVersion="2.7.4" "++2.11.12;publishSigned;sonatypeCentralRelease"
           requires:
             - tag_version
