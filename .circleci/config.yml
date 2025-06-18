@@ -40,6 +40,9 @@ workflows:
                 name: Integration testing
                 command: sbt "it:test"
             - run:
+                name: Aggregate coverage reports
+                command: sbt coverageAggregate
+            - run:
                 name: Send coverage report to Codacy
                 command: |
                   bash <(curl -Ls https://coverage.codacy.com/get.sh)
