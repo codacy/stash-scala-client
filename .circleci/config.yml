@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   codacy: codacy/base@12.2.0
 
-cache_prefix: &cache_prefix sbt-cache-18062025
+cache_prefix: &cache_prefix sbt-cache-18062026
 
 workflows:
   version: 2
