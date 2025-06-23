@@ -89,14 +89,12 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
   /*
    * Does an API request
    */
-  private def performRequest[T](method: String, request: Request[T], values: JsValue)(
-      implicit reader: Reads[T]
+  private def performRequest[T](method: String, request: Request[T], values: JsValue)(implicit
+      reader: Reads[T]
   ): RequestResponse[T] = {
     doRequest[T](request.path, method, Map.empty, Option(values)) match {
       case Right((HTTPStatusCodes.OK | HTTPStatusCodes.CREATED, body)) =>
-        parseJson[T](body).fold(identity, { jsValue =>
-          valueOrError[T](jsValue)
-        })
+        parseJson[T](body).fold(identity, { jsValue => valueOrError[T](jsValue) })
 
       case Right((HTTPStatusCodes.NO_CONTENT, _)) =>
         RequestResponse[T](None)
@@ -115,11 +113,10 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
         RequestResponse[Boolean](Option(true))
 
       case Right((HTTPStatusCodes.OK, body)) =>
-        parseJson[JsObject](body).fold({ error =>
-          RequestResponse[Boolean](None, message = error.message, hasError = true)
-        }, { _ =>
-          RequestResponse[Boolean](Option(true))
-        })
+        parseJson[JsObject](body).fold(
+          { error => RequestResponse[Boolean](None, message = error.message, hasError = true) },
+          { _ => RequestResponse[Boolean](Option(true)) }
+        )
 
       case Right((statusCode, body)) =>
         getError[Boolean](statusCode, statusCode.toString, body)
@@ -159,17 +156,16 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
         }
 
       val request = payload
-        .fold(baseRequest)(
-          p =>
-            // Supports PUT and POST of JSON
-            baseRequest
-              .header("content-type", "application/json")
-              .copy(connectFunc = StringBodyConnectFunc(Json.stringify(p)))
+        .fold(baseRequest)(p =>
+          // Supports PUT and POST of JSON
+          baseRequest
+            .header("content-type", "application/json")
+            .copy(connectFunc = StringBodyConnectFunc(Json.stringify(p)))
         )
       val authenticatedRequest = withAuthentication(request)
       val response = authenticatedRequest.asString
 
-      //if the response code is a redirect, follow it
+      // if the response code is a redirect, follow it
       if (HTTPStatusCodes.Redirects.all.contains(response.code)) {
         followRedirect(method, params, payload, response)
       } else {
@@ -181,14 +177,16 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
     }
   }
 
-  /**
-    * Checks the new location on the header of the [[HttpResponse]] passed by parameter
-    * and follows the redirect by making a new request. It returns the response if it is unable
-    * to get the location from the header.
-    * @param method The method of the request
-    * @param params The parameters of the request
-    * @param payload The payload of the request
-    * @param response The response to extract the new location or to return as default.
+  /** Checks the new location on the header of the [[HttpResponse]] passed by parameter and follows the redirect by
+    * making a new request. It returns the response if it is unable to get the location from the header.
+    * @param method
+    *   The method of the request
+    * @param params
+    *   The parameters of the request
+    * @param payload
+    *   The payload of the request
+    * @param response
+    *   The response to extract the new location or to return as default.
     */
   private def followRedirect[T](
       method: String,
@@ -243,9 +241,7 @@ class StashClient(apiUrl: String, authenticator: Option[Authenticator] = None, a
       }.mkString(Properties.lineSeparator))
 
     errorOpt
-      .map { error =>
-        Left(RequestResponse[T](None, message = error, hasError = true))
-      }
+      .map { error => Left(RequestResponse[T](None, message = error, hasError = true)) }
       .getOrElse(Right(json))
   }
 

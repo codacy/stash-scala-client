@@ -2,8 +2,7 @@ package com.codacy.client.stash.util
 
 object AvatarUtils {
 
-  /**
-    * Size in pixels to return avatars
+  /** Size in pixels to return avatars
     */
   val defaultAvatarSize = 64
 

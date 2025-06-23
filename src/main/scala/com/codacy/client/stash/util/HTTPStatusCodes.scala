@@ -9,7 +9,7 @@ object HTTPStatusCodes {
   val FORBIDDEN = 403
   val NOT_FOUND = 404
 
-  //Redirects
+  // Redirects
   object Redirects {
     val MOVED_PERMANENTLY = 301
     val FOUND = 302

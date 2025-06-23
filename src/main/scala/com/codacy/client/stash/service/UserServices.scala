@@ -6,20 +6,21 @@ import play.api.libs.json.Json
 
 class UserServices(client: StashClient) {
 
-  /**
-    * Gets the basic information associated with the authenticated account.
+  /** Gets the basic information associated with the authenticated account.
     */
   def getUsername: RequestResponse[String] = {
     client
       .doRequest[String]("/plugins/servlet/applinks/whoami", "GET", payload = None)
-      .fold(identity, {
-        case (200, body) => RequestResponse(Option(body))
-        case _ => RequestResponse(value = Option.empty, hasError = true)
-      })
+      .fold(
+        identity,
+        {
+          case (200, body) => RequestResponse(Option(body))
+          case _ => RequestResponse(value = Option.empty, hasError = true)
+        }
+      )
   }
 
-  /**
-    * Gets the basic information associated with the token owner account with a optional filter.
+  /** Gets the basic information associated with the token owner account with a optional filter.
     */
   def getUsers(name: Option[String] = None, params: Map[String, String] = Map.empty): RequestResponse[Seq[User]] = {
     val extraParams = name.map("filter" -> _).toMap
@@ -27,16 +28,14 @@ class UserServices(client: StashClient) {
     client.executePaginated(Request(baseUrl, classOf[Seq[User]]))(params ++ extraParams)
   }
 
-  /**
-    * Gets the basic information associated with an account.
+  /** Gets the basic information associated with an account.
     */
   def getUser(username: String): RequestResponse[User] = {
     val response = client.execute(Request(s"/rest/api/1.0/users/$username", classOf[User]))()
     getUserFallback(username, Map.empty, response)
   }
 
-  /**
-    * Gets the basic information associated with an account, including their avatarUrls.
+  /** Gets the basic information associated with an account, including their avatarUrls.
     */
   def getUserWithAvatar(username: String, size: Option[Int]): RequestResponse[User] = {
     val params = Map("avatarSize" -> size.getOrElse(64).toString)
@@ -44,8 +43,7 @@ class UserServices(client: StashClient) {
     getUserFallback(username, params, response)
   }
 
-  /**
-    * Creates a ssh key
+  /** Creates a ssh key
     */
   def createKey(projectKey: String, key: String, permission: String = "PROJECT_READ"): RequestResponse[SshKey] = {
     val url = s"/rest/keys/1.0/projects/$projectKey/ssh"
@@ -55,8 +53,7 @@ class UserServices(client: StashClient) {
     client.postJson(Request(url, classOf[SshKey]), values)
   }
 
-  /**
-    * Add a new ssh key an authenticated user
+  /** Add a new ssh key an authenticated user
     */
   def createUserKey(key: String): RequestResponse[UserSshKey] = {
     val url = "/rest/ssh/1.0/keys"
@@ -66,8 +63,7 @@ class UserServices(client: StashClient) {
     client.postJson(Request(url, classOf[UserSshKey]), values)
   }
 
-  /**
-    * Remove specific ssh keys from an authenticated user
+  /** Remove specific ssh keys from an authenticated user
     */
   def deleteUserKey(keyId: Long): RequestResponse[Boolean] = {
     val url = s"/rest/ssh/1.0/keys/$keyId"
@@ -75,11 +71,8 @@ class UserServices(client: StashClient) {
     client.delete(url)()
   }
 
-  /**
-    *
-    * We need this fallback for the cases when a username contains special characters because the
-    * getUser method don't find them and the only way is passing the name as a filter on getUsers method
-    *
+  /** We need this fallback for the cases when a username contains special characters because the getUser method don't
+    * find them and the only way is passing the name as a filter on getUsers method
     */
   private def getUserFallback(
       username: String,

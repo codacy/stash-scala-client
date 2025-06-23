@@ -24,11 +24,14 @@ class UserServicesTest extends WordSpec with Matchers with MockitoSugar {
       val value: JsResult[UserSshKey] = json.validate[UserSshKey]
 
       // THEN
-      value.fold(e => fail(s"$e"), sshKey => {
-        sshKey.id shouldBe 1
-        sshKey.text shouldBe "ssh-rsa test123"
-        sshKey.label shouldBe "test123"
-      })
+      value.fold(
+        e => fail(s"$e"),
+        sshKey => {
+          sshKey.id shouldBe 1
+          sshKey.text shouldBe "ssh-rsa test123"
+          sshKey.label shouldBe "test123"
+        }
+      )
     }
   }
 

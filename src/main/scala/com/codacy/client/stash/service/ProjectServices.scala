@@ -8,8 +8,7 @@ class ProjectServices(client: StashClient) {
 
   val BASE: String = "/rest/api/1.0/projects"
 
-  /**
-    * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
+  /** Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findById(projectKey: String, includeAvatar: Boolean = false): RequestResponse[Project] = {
     val params = if (includeAvatar) AvatarUtils.avatarParams else Map.empty[String, String]
@@ -17,8 +16,7 @@ class ProjectServices(client: StashClient) {
     client.execute(Request(s"$BASE/$projectKey", classOf[Project]))(params)
   }
 
-  /**
-    * Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
+  /** Only projects for which the authenticated user has the PROJECT_VIEW permission will be returned.
     */
   def findAll(pageRequest: Option[PageRequest], includeAvatar: Boolean = false): RequestResponse[Seq[Project]] = {
     val params = if (includeAvatar) AvatarUtils.avatarParams else Map.empty[String, String]
@@ -30,10 +28,10 @@ class ProjectServices(client: StashClient) {
     }
   }
 
-  /**
-    * Retrieve a page of users that have been granted at least one permission for the specified project.
+  /** Retrieve a page of users that have been granted at least one permission for the specified project.
     *
-    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
+    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission
+    * to call this resource.
     */
   def findUserPermissions(
       projectKey: String,
@@ -55,8 +53,7 @@ class ProjectServices(client: StashClient) {
     }
   }
 
-  /**
-    * Retrieve repositories from the project corresponding to the supplied projectKey.
+  /** Retrieve repositories from the project corresponding to the supplied projectKey.
     *
     * The authenticated user must have REPO_READ permission for the specified project to call this resource.
     */
@@ -71,10 +68,10 @@ class ProjectServices(client: StashClient) {
       case None => client.executePaginated(Request(s"$BASE/$projectKey/repos", classOf[Seq[Repository]]))()
     }
 
-  /**
-    * Retrieve a page of users that have been granted at least one permission for the specified project.
+  /** Retrieve a page of users that have been granted at least one permission for the specified project.
     *
-    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
+    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission
+    * to call this resource.
     */
   def findAllUsersWithPermissions(
       projectKey: String,
@@ -90,10 +87,11 @@ class ProjectServices(client: StashClient) {
       client.executePaginated(Request(s"$BASE/$projectKey/permissions/users", classOf[Seq[UserPermission]]))()
   }
 
-  /**
-    * Retrieve a page of users that have been granted at least one permission for the specified project, including their avatarUrls.
+  /** Retrieve a page of users that have been granted at least one permission for the specified project, including their
+    * avatarUrls.
     *
-    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
+    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission
+    * to call this resource.
     */
   def findAllUsersWithPermissionsAndAvatars(
       projectKey: String,
@@ -115,10 +113,10 @@ class ProjectServices(client: StashClient) {
     }
   }
 
-  /**
-    * Retrieve a page of groups that have been granted at least one permission for the specified project.
+  /** Retrieve a page of groups that have been granted at least one permission for the specified project.
     *
-    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission to call this resource.
+    * The authenticated user must have PROJECT_ADMIN permission for the specified project or a higher global permission
+    * to call this resource.
     */
   def findAllGroups(projectKey: String, pageRequest: Option[PageRequest]): RequestResponse[Seq[Group]] =
     pageRequest match {

@@ -1,9 +1,9 @@
 version: 2.1
 
 orbs:
-  codacy: codacy/base@9.0.0
+  codacy: codacy/base@12.2.0
 
-
+cache_prefix: &cache_prefix sbt-cache-18062027
 
 workflows:
   version: 2
@@ -14,39 +14,48 @@ workflows:
       - codacy/sbt:
           name: populate_cache
           persist_to_workspace: true
-          cmd: sbt "set scalafmtUseIvy in ThisBuild := false;+update"
+          cmd: sbt "+update"
+          cache_prefix: *cache_prefix
           requires:
             - codacy/checkout_and_version
       - codacy/sbt:
-          name: check_format
-          cmd: sbt "scalafmt::test;test:scalafmt::test;sbt:scalafmt::test"
-          requires:
-            - populate_cache
-      - codacy/sbt:
-          name: compile
+          name: compile_and_test
           persist_to_workspace: true
-          cmd: sbt "+compile;+test:compile"
+          cache_prefix: *cache_prefix
+          steps_before_sbt:
+            - run:
+                name: Enable coverage
+                command: echo "ThisBuild / coverageEnabled := true" > coverage.sbt
+          steps:
+            - run:
+                name: Check formatting (all files)
+                command: sbt "scalafmtCheckAll;scalafmtSbtCheck"
+            - run:
+                name: Compile main and test
+                command: sbt "coverage;+compile;+test:compile"
+            - run:
+                name: Unit testing
+                command: sbt test
+            - run:
+                name: Integration testing
+                command: sbt "it:test"
+            - run:
+                name: Aggregate coverage reports
+                command: sbt coverageAggregate
+            - run:
+                name: Send coverage report to Codacy
+                command: |
+                  bash <(curl -Ls https://coverage.codacy.com/get.sh)
+            - run:
+                name: Clean coverage.sbt from cache
+                command: rm coverage.sbt
           requires:
             - populate_cache
-      - codacy/sbt:
-          name: test
-          cmd: |
-            sbt "coverage;test;coverageReport"
-            bash <(curl -Ls https://coverage.codacy.com/get.sh)
-          requires:
-            - compile
-            - check_format
-      - codacy/sbt:
-          name: it_test
-          cmd: sbt "it:test"
-          requires:
-            - compile
-            - check_format
       - codacy/tag_version:
           name: tag_version
           context: CodacyAWS
           requires:
-            - test
+            - compile_and_test
           filters:
             branches:
               only:
@@ -56,7 +65,7 @@ workflows:
           context: CodacyAWS
           cmd: |
             sbt "retrieveGPGKeys;+publishSigned"
-            sbt -DplayVersion="2.4.3" "++2.11.12;publishSigned"
-            sbt -DplayVersion="2.7.4" "++2.11.12;publishSigned;sonatypeBundleRelease"
+            sbt "retrieveGPGKeys" -DplayVersion="2.4.3" "++2.11.12;publishSigned"
+            sbt "retrieveGPGKeys" -DplayVersion="2.7.4" "++2.11.12;publishSigned;sonatypeCentralRelease"
           requires:
             - tag_version

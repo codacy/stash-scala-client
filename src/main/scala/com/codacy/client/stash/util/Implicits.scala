@@ -13,9 +13,7 @@ object Implicits {
 
   implicit def enumReads[E <: Enumeration](e: E): Reads[e.Value] = {
     Reads.StringReads
-      .map { value =>
-        e.values.find(_.toString == value)
-      }
+      .map { value => e.values.find(_.toString == value) }
       .collect(JsResultHelper.error(s"Invalid enumeration value")) { case Some(v) => v }
   }
 
